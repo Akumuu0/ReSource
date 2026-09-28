@@ -1,0 +1,30 @@
+Risk assesment, and project schedule
+
+Risk assesment:
+Risk Evaluation Method
+Each risk is evaluated using two values:
+- Likelihood (L): probability that the risk will occur, scored from 1–5
+- Impact (I): severity of its effect on the project, scored from 1–5
+- Risk Score = Likelihood * Impact
+Score	Meaning
+1	Very Low
+2	Low
+3	Medium
+4	High
+5	Very High
+
+
+For the total score:
+- 1–5: Low
+- 6–10: Moderate
+- 11–15: High
+- 16–25: Critical
+
+
+
+
+project schdule includes:
+1-phase
+2-main activities
+3-milestones
+4-dependecies (what does it depend on from past phase)
