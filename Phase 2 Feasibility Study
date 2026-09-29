@@ -44,27 +44,473 @@ Proposed Technical Owner: IT Department, Khalifa University
 
 # Financial Analysis
 ## Overview and Continuity from Phase 1
+This section evaluates the Economic dimension of the TELOS feasibility framework for
+ReSource. It builds directly on the Expected Benefits and Assumptions stated in the Phase 1
+report [8], where the team identified the primary financial benefit as “reduced spending by
+reusing surplus assets and lowering storage costs,” and listed as a working assumption that
+“the university would be willing to adopt a centralized platform for internal asset exchange if
+one were available.” The analysis below turns those qualitative statements into quantified,
+formula-backed estimates.
+Consistent with the Phase 1 Project Constraints (academic prototype scope, one Fall 2026
+semester, a four-student team, and reliance on existing libraries, pretrained models, or APIs
+rather than custom-trained models), all figures in this section describe a single-semester pilot
+deployment, not a full university-wide rollout. Every number that is not drawn from a cited
+public source is explicitly labeled as an assumption, together with the reasoning behind it, so
+the figure can be checked and adjusted rather than taken on faith.
+Consistent with standard engineering economic-analysis practice, this section treats
+engineering labor as the primary, market-priced cost driver of the project rather than as a free
+resource. Personnel time is typically the dominant cost in a software initiative, and pricing it at
+a real market rate gives a realistic picture of what building and operating ReSource actually
+costs. The current development team's labor carries no cash outlay at this stage, which is
+noted separately for transparency, but that is not the basis for the economic case below.
+Two categories of cost are analyzed: nonrecurring (one-time) costs and recurring (ongoing
+operational) costs, followed by a benefit analysis and a combined cost-benefit summary.
 ## Nonrecurring (One-Time) Costs: Engineering Labor
+Industry cost estimation for software projects is dominated by personnel cost, not
+infrastructure or tooling, so this section leads with a market-priced labor estimate rather than
+an AED 0 in-kind figure. All cost and benefit figures in this section are presented in AED (UAE
+dirham).
+Professional Labor Cost = Team Size × Avg. Hours/Week × Development Weeks ×
+Market Hourly Rate (1)
+Cited market rate: PayScale [9] reports the average entry-level Software Engineer salary in
+the UAE as AED 95,779/year (2026 data). Converting to an hourly rate using a standard 2,080-
+hour work year (40 hours/week × 52 weeks) gives AED 46.05/hour.
+Assumption (hours): 4 students × 8 hours/week × 12 development weeks (spanning the
+design-through-development window described by Phases 2–6 of the Phase 1 timeline) = 384
+person-hours. Eight hours/week per student is a reasonable load for a project layered on top
+of a full course schedule.
+Professional Labor Cost = 384 hours × AED 46.05/hour ≈ AED 17,683 (2)
+Actual cash outlay at the current development stage
+Because ReSource is currently being built by an academic project team rather than a
+commercially staffed engineering team, the real out-of-pocket labor cost at this stage is AED
+0: no one is actually paid the figure above (see Phase 1 Constraint: “team of 4 students”). The
+AED 17,683 professional-labor estimate is still carried forward as the primary cost figure in the
+Cost-Benefit Summary below, since a credible economic case for ReSource should hold up
+under realistic market costing rather than rest on the fact that the current team's labor happens
+to be free.
+Other nonrecurring items
+Item Real Cash Cost Notes
+Development tools (IDE, Git/GitHub, UML
+tools)
+AED 0 Free tiers / open-source, per
+Phase 1 Technical Resources
+Optional custom domain name ~AED 44/year Only if the prototype is made
+publicly reachable; not
+required for course
+demonstration, which can run
+on the platform’s default
+subdomain
 ## Recurring (Operational) Costs
+For costing purposes, this section assumes a representative technology stack consistent with
+the Phase 1 Technical Resources table, which deliberately left the “Database System” and “AI
+Models / APIs” rows generic: Firebase/Firestore for the backend database and hosting layer,
+and the Claude API (Haiku 4.5 model) for the AI Matching Engine’s semantic-similarity and
+classification calls. This is a costing assumption only (the actual technology selection remains
+a Phase 4/5 design decision), but it is grounded in real, publicly published pricing so the
+estimate is checkable.
+Database and Hosting Costs
+Firebase’s no-cost Spark plan includes, per the official Firebase pricing page [10]: 1 GiB of
+Firestore storage, 50,000 document reads/day, 20,000 document writes/day, 20,000
+document deletes/day, and 10 GiB of network egress/month, plus 10 GB of Hosting storage
+and 360 MB/day of Hosting data transfer. The pay-as-you-go Blaze plan keeps all of these
+quotas free and only bills usage above them at standard Google Cloud rates.
+Assumption: a one-semester pilot with roughly 150 active users (students, department
+representatives, and the Procurement Team / University Management stakeholders identified
+in the Phase 1 stakeholder table) generates an estimated 5,000 document reads/day and 500
+document writes/day, both comfortably inside the Spark free-tier quotas of 50,000 reads/day
+and 20,000 writes/day.
+Conclusion: database and hosting costs for the pilot are AED 0/month, since projected usage
+stays within Firebase’s published free-tier limits. If ReSource were scaled beyond the course
+prototype to a university-wide production deployment (outside the Phase 1 Constraints, which
+explicitly scope the project as “an academic prototype… rather than a production-ready,
 ## Benefit Analysis: Avoided-Purchase and Storage Savings
+The Phase 1 Expected Benefits section states the financial benefit qualitatively: “reduced
+spending by reusing surplus assets and lowering storage costs.” This section quantifies that
+benefit directly, using the avoided purchase price of reused assets together with clearly stated
+assumptions so every figure can be checked and adjusted. The formula and assumptions
+below do exactly that, cross-checked where possible against a simulated stakeholder
+interview (Appendix A).
+Avoided-Purchase Savings = Number of Assets Reused × Average Avoided Purchase
+Price (6)
+Assumption (reuse volume): using the same 150-active-user pilot base introduced above
+under Recurring (Operational) Costs, the team assumes roughly 1 completed reuse
+transaction for every 4 active users over the semester (150 ÷ 4 ≈ 37, rounded to 40 assets).
+This is a conservative, illustrative figure for an early-stage internal exchange pilot, not a KU-
+specific historical statistic, since itemized KU reuse or purchase records are not publicly
+available. A simulated University Management (Customer) Representative (AI Stakeholder
+Mimic; see Appendix A, Q1) described a realistic first-semester pilot as “a handful of
+departments… in the range of a hundred to a couple hundred active participants,” which is
+consistent with the 150-user scale used here.
+Assumption (avoided unit price): AED 551 average avoided purchase price per reused
+asset, a blended estimate across the low-to-mid-value campus items the Phase 1 report
+describes ReSource handling (furniture, lab equipment accessories, electronics peripherals,
+and office supplies). The same simulated University Management Representative (Appendix
+A, Q2) described the assets most likely to go through the system as “the everyday stuff
+departments accumulate… individually low-to-mid value items, not major capital equipment,”
+which supports keeping this estimate in the low-to-mid range rather than assuming higher-
+value equipment.
+Avoided-Purchase Savings = 40 assets × AED 551 = AED 22,040 (per pilot semester)
+(7)
+Assumption (storage/handling savings): AED 18 per asset in avoided storage and handling
+cost, for items that are matched and transferred instead of sitting in surplus storage awaiting
+a manual disposal decision, directly reflecting the Phase 1 benefit statement “lowering storage
+costs.”
+Storage Savings = 40 assets × AED 18 = AED 720 (per pilot semester) (8)
+Total estimated semester benefit = AED 22,040 + AED 720 = AED 22,760
+These figures are illustrative projections built from explicitly stated assumptions, intended to
+demonstrate the avoided-purchase savings mechanism described in Phase 1’s Expected
+Benefits section. They are not confirmed Khalifa University financial data, since itemized
+figures of that kind are not publicly available to the team.
 ## Cost-Benefit Summary
+Two views are given below. The professional-costing view is presented first and is the primary
+conclusion of this analysis, since it reflects what ReSource would cost under realistic market conditions; the actual-cash-outlay view is kept only as a secondary transparency note, since
+it reflects the current development stage's invoice, not the project's underlying economic value.
+View Total Cost
+(Semester)
+Total Benefit
+(Semester)
+Net Result
+Primary: professional costing
+(labor priced at market rate)
+AED 17,705 AED 22,760 +AED 5,055
+Secondary (transparency only):
+actual cash outlay at the
+current development stage
+AED 22.04 AED 22,760 +AED 22,738
+Primary result: treating engineering time at real UAE market rates (AED 17,683 in
+professional labor, from Nonrecurring (One-Time) Costs above, plus AED 22.04 in recurring
+cloud/AI cost, from Recurring (Operational) Costs above), ReSource still shows a positive net
+result of roughly AED 5,055 for a single pilot semester, a benefit-to-cost ratio of about 1.3:1.
+That is a far more conservative and credible figure than simply noting that the current team's
+labor is free, and it is the figure University Management should rely on, since it holds up under
+the same costing standard a fully staffed engineering team would be measured against.
+The secondary, actual-cash-outlay view is retained for completeness: at the current
+development stage, the real cash spent this semester is about AED 22, which is a true
+statement about the project's present cost but not, on its own, a meaningful measure of the
+system's economic value.
 ## Assumptions Used in This Section
-
+Pilot scale: approximately 150 active users (students, department representatives,
+Procurement Team, and University Management) during a single Fall 2026 semester
+pilot, consistent with the Phase 1 Project Constraints scoping ReSource as an
+academic prototype, and consistent with a simulated University Management
+stakeholder interview (AI Stakeholder Mimic; Appendix A).
+• Usage intensity: an average of 2 AI matching requests per active user per week, and
+roughly 1 completed reuse transaction per 4 active users over the semester.
+• Technology stack for costing purposes only: Firebase/Firestore (database and
+hosting) and the Claude API, Haiku 4.5 model (AI matching and classification),
+consistent with, but not more specific than, the generic “Database System” and “AI
+Models / APIs” line items already listed in the Phase 1 Technical Resources table.
+Final technology selection remains a Phase 4/5 design decision.
+• AI call size: approximately 500 input tokens and 150 output tokens per
+matching/classification call.
+• Average avoided purchase price of AED 551 and avoided storage/handling cost of
+AED 18 per successfully reused asset, blended across the low-to-mid-value item
+types (furniture, lab accessories, electronics peripherals, office supplies) described in
+the Phase 1 report.
+• Professional labor priced at the UAE market average entry-level Software Engineer
+rate: AED 95,779/year (PayScale, 2026), converted to AED 46.05/hour using a
+standard 2,080-hour work year, applied to 384 person-hours (4 students × 8
+hours/week × 12 development weeks).
+• All figures in this section are presented in AED. Anthropic's Claude API pricing is
+published in USD and was converted using the UAE dirham's fixed peg of 3.6725
+AED per USD; all other figures are AED-native (PayScale) or team-stated
+assumptions expressed directly in AED.
 # Legal and regulatory analysis
 ## Overview and Scope
+This section covers the Legal dimension of the TELOS framework in full: legal, ethical, privacy,
+security, procurement, ownership, and safety constraints, together with the university-policy
+context ReSource would operate under, not only the intellectual-property and data-privacy
+angle shown on the Phase 2 slide deck. It is grounded in three UAE federal laws and two real,
+currently published Khalifa University web pages, cited below, and it builds directly on the
+Phase 1 report’s [8] stakeholder roles, AI Matching Engine description, and Project
+Constraints.
+As with the Financial (Economic) Feasibility section above, every legal point is tied to a cited
+primary or secondary source; where no public Khalifa University policy document could be
+found to cite, that gap is either filled using a simulated stakeholder interview (documented in
+Appendix A) or stated openly as an unresolved open item under University Policy
+Dependencies and Open Items below rather than filled with an invented citation.
 ## Data Privacy and Protection: UAE PDPL (Federal Decree-Law No. 45 of 2021)
+ReSource stores personal data belonging to Khalifa University students and staff, including
+names, university IDs, department affiliations, and asset request/transfer history, which brings
+the system within scope of the UAE’s Federal Decree-Law No. 45 of 2021 on the Protection
+of Personal Data (PDPL) [12], [13], the UAE’s general federal data-protection law.
+• Consent (Article 6): the data controller must be able to prove the data subject’s
+consent where consent is the lawful basis for processing, and users may withdraw
+consent at any time. ReSource’s account-registration flow needs an explicit, clear
+consent step before storing user or asset data.
+• Data subject rights: the PDPL grants individuals the right to access their data,
+request correction or erasure, restrict processing, and, most relevant to the AI
+Matching Engine, the right to object to automated decision-making that has a legal or
+similarly significant effect on them.
+• Right to object to automated decisions: because the AI Matching Engine assigns a
+compatibility score and recommendation for each request, a user who disputes or is
+negatively affected by a match should be able to request a human review, not just an
+automated explanation.
+Data Protection Impact Assessment (Article 21): a DPIA is required before
+processing that involves systematic, large-scale automated evaluation with legal or
+significant effect. Because the AI Matching Engine performs exactly this kind of
+systematic automated evaluation, the team should treat producing a DPIA as a
+Phase 3/4 deliverable-adjacent task, not an afterthought.
+• Penalties: the PDPL itself does not fix specific fine amounts; it allows the UAE
+Cabinet to set administrative penalties through Executive Regulations. This is noted
+here as a compliance risk to plan for, rather than a number to quantify, since no
+public Executive Regulation fine schedule could be cited.
 ## Intellectual Property and AI-Output Ownership: UAE Copyright Law (Federal Decree-Law No. 38 of 2021)
+ReSource generates AI-authored content: the Matching Engine’s compatibility explanations
+and the “Generative AI Reporting” (financial savings, waste diversion, and avoided-purchase
+summaries) noted in the Phase 1 stakeholder table for University Management. UAE Federal
+Decree-Law No. 38 of 2021 on Copyright and Neighboring Rights [14] protects works that
+show originality and human creativity, and, consistent with the position most jurisdictions
+currently take [15], does not recognize an AI system itself as an “author.”
+• Practical effect: content generated by the AI Matching Engine or the reporting feature
+with little human involvement sits in a legal gray area, since a system cannot be
+classified as the natural-person author copyright protection normally requires.
+• Recommended mitigation: document that KU (as the commissioning institution) owns
+system-generated reports and matching explanations through the system’s terms of
+use, and log sufficient human review/curation of AI outputs (e.g., a staff member
+approving a generated sustainability report before it is shared) to support that
+ownership claim, the approach current legal commentary [15] recommends where
+the law itself is silent.
+• Codebase ownership: who owns the ReSource source code itself at this development
+stage is a separate, open question the Phase 1 report does not address and that is
+outside the scope of this feasibility analysis; it is listed as an open item under
+University Policy Dependencies and Open Items below for Khalifa University's
+relevant office to confirm.
 ## Cybersecurity and Unauthorized Access: UAE Cybercrime Law (Federal Decree-Law No. 34 of 2021)
+ReSource is, functionally, a database of university user and asset records, which places it
+squarely within the scope of Federal Decree-Law No. 34 of 2021 on Countering Rumors and
+Cybercrimes [16]. The law criminalizes unauthorized access to IT systems and sensitive data,
+with penalties of 6 months to 5 years’ imprisonment and fines ranging from AED 20,000 to
+AED 3,000,000 depending on the severity of the offense [17]; it also requires clear consent
+before personal data is collected, transmitted, or processed.
+• Implication for design: role-based access control should follow the stakeholder roles
+already defined in the Phase 1 stakeholder table (e.g., the Procurement Team can
+view inventory; University Management has final budget/adoption authority), so that
+access is scoped to what each role legitimately needs.
+• Recommended controls: authentication, audit logging of who viewed or changed
+asset and transfer records, and encryption of data in transit and at rest, all standard
+measures that directly reduce exposure under this law’s unauthorized-access
+provisions.
+• KU single sign-on (SSO): per a simulated interview with an IT Department
+Representative (AI Stakeholder Mimic; see Appendix A, Q2), SSO integration is
+possible in principle for an approved internal tool but requires a formal KU IT request
+and review, not something a course prototype should assume by default. The design
+should treat standalone authentication as the working assumption for the prototype,
+and SSO integration as a Phase 3/4 dependency to raise with KU IT.
 ## Procurement, Institutional Ownership, and Sustainability Alignment (Khalifa University Policy)
+Two real, currently published Khalifa University web pages give the project direct institutional
+grounding, beyond the three federal laws above.
+• KU’s Procurement & Contracts Department [18] states that “procurement is more
+than just buying things; it’s about making thoughtful choices that help our planet and
+future generations,” and describes sustainability-linked supplier engagement and a
+formal Procurement Policy document. ReSource operationalizes exactly this principle
+(reduce new purchases by matching internal surplus first) at the department level,
+which is a strong feasibility argument, but it also means the tool intersects with real
+budget-authorization and procurement rules. The team should formally involve this
+department during Phase 3/4 review, since any system that influences whether a
+department buys new or reuses existing assets touches procurement policy and
+University Management’s budget authority, as reflected in the Phase 1 stakeholder
+table. This is consistent with a simulated University Management Representative (AI
+Stakeholder Mimic; Appendix A, Q3), who noted that final buy-new-vs-reuse
+decisions still go through the department’s budget holder and, above a routine
+amount, through Procurement, meaning ReSource should surface and support the
+reuse case, not make the final spending decision itself.
+• KU’s Sustainability Initiative [19] already runs a “Recycle, Reduce & Reuse” program,
+reports a 3% reduction in energy consumption from 2022, and aligns its work with the
+UAE Water Security Strategy 2036 and UAE Energy Strategy 2050. ReSource
+extends these existing, university-endorsed commitments into an AI-assisted
+exchange tool, which gives the project institutional legitimacy and a natural internal
+sponsor, the KU Sustainability Office, in addition to the IT department.
 ## Ethical and Safety Considerations
+Matching fairness: the AI Matching Engine’s ranking should not systematically
+disadvantage smaller departments with fewer registered assets; matching criteria
+and the “clear explanation” the Phase 1 report requires for each compatibility score
+should be documented and reviewable, so bias can actually be checked rather than
+assumed away.Physical safety in the asset life cycle: the Phase 1 report’s
+repair/refurbish/donate/recycle/retire life cycle covers general surplus items, but
+some assets (lab chemicals, batteries, equipment with electrical or sharp-edge
+hazards) need safe-handling and proper e-waste disposal, not just a software match.
+Hazardous-material items should be flagged for manual safety review rather than
+auto-matched, to avoid a safety liability gap the current workflow does not explicitly
+close.
+• Data minimization: only asset and request data actually needed for matching should
+be collected, in line with the PDPL principles discussed above under Data Privacy
+and Protection, rather than defaulting to collecting everything a form could capture.
 ## University Policy Dependencies and Open Items
+In the interest of transparency, this subsection states plainly what could and could not be
+confirmed from public sources, and what was instead informed by a simulated stakeholder
+interview. A dedicated, publicly available Khalifa University IT acceptable-use, data-
+governance, or asset-disposal policy document could not be located during this research; only
+the Procurement & Contracts Department and Sustainability Initiative pages cited above under
+Procurement, Institutional Ownership, and Sustainability Alignment are directly citable public
+KU sources.
+Stated assumption, informed by a simulated interview: the team assumes KU’s Office of
+Information Technology maintains an internal data-governance and account/access policy that
+would apply to any system handling KU user accounts. This is consistent with standard
+university IT governance practice and the PDPL obligations described above under Data
+Privacy and Protection, and it is also what a simulated IT Department Representative (AI
+Stakeholder Mimic; see Appendix A, Q1) described when asked directly. Because that
+interview is simulated, not a real statement from KU IT, this remains an assumption, and the
+team should still request and review the actual policy directly from KU IT during Phase 3 rather
+than treating it as confirmed.
+Open item, partially informed by a simulated interview: how ReSource’s life-cycle “retire”
+action for hazardous or regulated assets (electronics, lab items) should route to Facilities
+Management or an approved recycling vendor is not documented in any public KU source. A
+simulated IT Department Representative (AI Stakeholder Mimic; see Appendix A, Q3)
+suggested such items should route to Facilities Management or a vendor rather than being
+closed out inside the app, which is consistent with the recommendation above under Ethical
+and Safety Considerations to flag hazardous items for manual review. This should be
+confirmed with the real department during Phase 3.
+Open item (unresolved): ownership of the ReSource codebase and of AI-generated report
+content at this development stage (see Intellectual Property and AI-Output Ownership above)
+should be confirmed with Khalifa University's relevant office (e.g., Office of the Provost or a
+Technology Transfer function), since no public KU IP policy for early-stage internal projects
+could be cited here and this was not covered by the simulated interviews in Appendix.
 ## Legal and Regulatory Risk Summary
 
 # Operational Feasibility
 ## Overview and Scope
+Overview and Scope
+This section evaluates the Operational dimension of the TELOS feasibility framework for
+ReSource: whether the departments, asset custodians, administrators, maintenance staff,
+procurement staff, and sustainability officers identified in the Phase 1 stakeholder table can
+realistically adopt the workflows ReSource proposes. Consistent with the Financial
+(Economic) Feasibility and Legal, Regulatory and Ethical Feasibility sections above, this
+assessment is scoped to a single Fall 2026 semester pilot with roughly 150 active users, not
+a full university-wide rollout, and every judgment below is stated as an assumption or a direct
+consequence of the stakeholder roles the team has already defined, rather than as confirmed
+organizational fact.
 ## Current-State to Future-State Workflow Change
+The Background and Context section above describes the current process as informal and
+undocumented: surplus assets are stored, reported for disposal, or mentioned to other
+departments by email or word of mouth; requests are raised without checking existing surplus;
+transfer approvals happen through email or paper forms with no standard workflow; and
+maintenance records live in separate department spreadsheets or paper logs. Operational
+feasibility depends on how large a jump ReSource represents from that baseline for each
+stakeholder group, since the size of the change, not just its direction, determines whether it is
+adopted.
+For most of the identified stakeholders, ReSource formalizes and centralizes a task they
+already perform informally rather than asking them to take on an entirely new responsibility:
+department representatives already decide what their department needs and what it can
+spare; administrators already approve transfers and disposals in some form; asset
+coordinators already track condition and location, even if only on paper. This matters
+operationally, because a recent large-scale meta-analysis of technology-acceptance studies
+finds that perceived usefulness and perceived ease of use remain the strongest predictors of
+whether a system is actually adopted, with no significant weakening of that effect despite
+decades of technological change [20], in practice, that means a system is adopted when target
+users judge it as both useful for their existing task and no harder to use than their current
+approach. Where ReSource instead asks a stakeholder to take on a genuinely new task, such
+as University Management reviewing AI-generated sustainability reports it did not previously
+receive, that is flagged separately below as a higher-effort adoption point.
 ## Stakeholder-by-Stakeholder Adoption Assessment
+The table below applies this current-state to future-state lens to each stakeholder category
+from the Phase 1 stakeholder table, and gives the team's judgment of adoption feasibility for
+the pilot scope.
+Stakeholder Current-State Process New Responsibility
+Under ReSource
+Adoption
+Feasibility (Pilot)
+Administrators Approves
+transfers/disposals ad
+hoc by email or paper
+form, no shared record
+Reviews a structured
+approval queue;
+approves/rejects
+transfers and end-of-life
+actions in-app
+High. Formalizes an
+existing task; main
+effort is learning one
+new interface rather
+than a new
+responsibility.
+Procurement Team Checks stock informally,
+if at all, before approving
+a purchase request
+Consults AI-generated
+reuse suggestions and
+inventory visibility before
+approving new
+purchases
+Moderate. Requires
+a behavior change
+(checking ReSource
+before purchasing),
+not just a new tool;
+needs an explicit
+process rule to be
+effective, not just
+system availability.
+Department
+Representatives
+Requests/offers assets
+informally by email or
+word of mouth
+Submits structured
+requests and surplus
+listings through the
+platform
+High. Direct
+digitization of an
+existing, well-
+understood task.
+Asset Coordinators Tracks condition,
+ownership, and location
+in spreadsheets or paper
+logs, per department
+Registers/updates assets
+in a shared system;
+reviews AI-suggested
+matches before
+confirming
+Moderate. Data-entry
+discipline (accurate,
+timely updates) is a
+new behavioral
+requirement, not only
+a new tool;
+incomplete or stale
+records would
+directly degrade the
+AI Matching Engine,
+so this group carries
+a disproportionate
+share of the adoption
+risk.
+University
+Management
+Receives ad hoc,
+summary-level updates
+on cost and impact, not
+structured reporting
+Reviews AI-generated
+reports summarizing
+financial savings, waste
+diversion, and avoided
+purchases
+Moderate. This is the
+one stakeholder
+group being asked to
+consume an output
+type (structured AI-
+generated reporting)
+it did not previously
+receive at all, so its
+adoption depends on
+the reports being
+clear and short
+enough to fit into an
+existing decision-
+making routine, not
+on any hands-on
+system use.
+Developers and Lab Instructors are excluded from the table above because they are internal
+project roles rather than operational adopters of the finished system: their relationship to
+ReSource is building and evaluating it, not using it to manage assets, so their feasibility is
+addressed in the Technical Analysis and course-schedule sections rather than here.
 ## Training and Onboarding Requirements
+
 ## Organizational Support Requirements
 ## Adoption Risks and Fallback Behavior
 ## Operational Feasibility Verdict
