@@ -1,0 +1,31 @@
+Introduction, project overview, scope, stakeholders, and market analysis
+
+Introduction:
+- introduced ReSource and its purpose in campus resource reuse.
+- updated the document purpose to focus on Phase II feasibility.
+- clarified that the university’s current processes still need verification.
+
+Project overview:
+- described the classic asset-management layer and the AI-powered layer.
+- numbered the functional requirements FR-1 to FR-12 for traceability.
+- clarified that AI supports decisions while authorized users approve important actions.
+
+Project scope:
+- defined the included functions and excluded work.
+- identified the constraints, expected benefits, and assumptions requiring validation.
+
+Stakeholders:
+- defined stakeholder responsibilities, information needs, and permissions.
+- included finance, maintenance, sustainability, and system administrator roles.
+- identified the proposed business owner as the Head of Facilities Management and the proposed technical owner as the IT Department.
+- outlined a stakeholder interview plan. I did not conduct real interviews.
+
+Market analysis:
+- identified university departments as the target users.
+- compared ReSource with Warp It, Rheaply, Snipe-IT, and manual alternatives.
+- explained ReSource’s proposed value and the factors affecting adoption.
+- clarified that local demand still needs confirmation.
+
+Sources:
+- used the project instructions, Phase II slides, and official product information.
+- added references to support the analysis.
