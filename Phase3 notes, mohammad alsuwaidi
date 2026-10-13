@@ -1,0 +1,65 @@
+
+My parts of the Phase 3 document
+--------------------------------
+- 4.1 Asset Registration (FR-1)
+- 4.3 Resource Requests and Reservations (FR-3)
+- 4.4 Approvals and Transfers (FR-4)
+- 6.1 Data Requirements
+- 7.3 Use cases: UC-1, UC-3, UC-5
+- Appendix B: State lists
+- Appendix D: Requirements traceability
+- Final priority check (Essential / Desirable / Future)
+
+
+FR-1 Asset Registration (FR-1.1 to FR-1.14)
+- How an Asset Custodian registers an asset and publishes it.
+- Required fields: name, description, category, quantity, owner,
+  department, location, condition.
+- Optional fields: subcategory, specs, brand/model, serial number,
+  purchase date, estimated value (AED), material type.
+- Rules for invalid input, photos (max 5) and documents (max 3),
+  unique asset IDs, duplicate serial warnings, drafts, audit log.
+- Registration must still work if the AI is down.
+ 
+FR-3 Requests and Reservations (FR-3.1 to FR-3.14)
+- How a Requester asks for a listed asset or for a general need.
+- Request fields: department, category, purpose, quantity,
+  required date, delivery location (+ optional specs, condition, urgency).
+- The requested quantity is held so the same item is not given
+  to two departments.
+- Requests can be edited while Submitted and cancelled before handover.
+- Holds expire after 10 working days.
+ 
+FR-4 Approvals and Transfers (FR-4.1 to FR-4.16)
+- Four steps: release (owner) -> approval (Administrator)
+  -> transfer (collection or delivery) -> receipt (receiving department).
+- High-value items need a second approval from the Procurement Officer.
+- AI never approves or transfers anything; a person always decides.
+- Custody and location only change when receipt is confirmed.
+- Disputes (damaged / wrong item) go to the Administrator.
+ 
+6.1 Data Requirements
+- Listed the stored fields for 15 entities: user, department, category,
+  asset, request, match, reservation, approval, transfer, maintenance,
+  end-of-life, sustainability values, notification, audit log, model version.
+
+
+
+Use cases
+- UC-1 Register and Publish an Asset (Asset Custodian)
+- UC-3 Submit a Resource Request (Requester)
+- UC-5 Transfer an Asset (Asset Custodian)
+- Each one has: description, actors, related requirements,
+  preconditions, trigger, main flow, alternative flows,
+  exceptions, postconditions and rules.
+
+
+Use cases
+- UC-1 Register and Publish an Asset (Asset Custodian)
+- UC-3 Submit a Resource Request (Requester)
+- UC-5 Transfer an Asset (Asset Custodian)
+- Each one has: description, actors, related requirements,
+  preconditions, trigger, main flow, alternative flows,
+  exceptions, postconditions and rules.
+
+Ready to push this section, still not done with the appendix
