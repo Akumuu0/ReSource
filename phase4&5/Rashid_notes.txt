@@ -1,0 +1,14 @@
+Security (6):
+HTTPS, and role checks on every action.
+A tamper-proof audit log.
+Encrypted data and nightly backups kept in the UAE.
+A draft data protection assessment.
+Mockups (7.5 to 7.7): the maintenance, sustainability dashboard and AI report screens.
+Class diagram (9.4): notifications, audit entries and sustainability values.
+Sequence diagrams (10.5, 10.9, 10.10):
+AI report: AI writes the text, the figures are checked, and a person approves it.
+Maintenance: report, assign, inspect, then repair or flag for end-of-life review.
+End of life: propose, safety review, approval, then completion. A rejection restores the asset.
+Activity and state diagrams (11.3, 12.2, 12.5, 12.6): the maintenance and end-of-life flows and states.
+Deployment (13.2): Docker on one UAE server, with web, worker and database parts.
+Sustainability (18): example for 2 oscilloscopes: AED 8,316 saved, 5.2 kg of waste diverted and 119.2 kg CO2e avoided.
