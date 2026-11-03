@@ -1,0 +1,6 @@
+Add ReSource Phase IV & V design sections (Architecture Design and Detailed Design)
+
+- Mockups: Asset Registration, Request Submission and Transfer Approval screens, each showing the AI result, confidence, reason, human decision and AI-down state
+- UML models: class diagrams (core domain; approvals, transfers and maintenance), sequence diagrams for UC-2 to UC-5, and activity diagrams from listing to approved request and transfer
+- State diagrams for Asset, Request and Approval/Transfer, plus the ERD with notation and data dictionary
+- Interface contracts for module operations, plus an AI contributions statement; section, figure and table numbers match the combined group document
