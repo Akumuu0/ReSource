@@ -1,0 +1,8 @@
+- I prepared the introduction, including the purpose, scope, document conventions and design summary for Phases 4 and 5.
+- I created the context diagram and Level 1 and Level 2 data-flow diagrams, documented the data stores, and checked that the flows were balanced across levels.
+- I developed the architecture section, compared design options and documented six architecture decisions with their reasons and trade-offs.
+- I prepared the architecture view and explained how the modules, database, background worker and AI gateway communicate.
+- I included the combined use case diagram and mapped all 13 use cases to their related design sections.
+- I designed the account registration and activation sequence diagram for UC-13 and UC-8, covering consent and administrator approval.
+- I prepared the component diagram and the requirement-to-design traceability table in Appendix A.
+- I used Claude to assist with drawing diagrams and checking consistency against Phases 2 and 3. I wrote the section content, selected the architecture options and reviewed every figure.
