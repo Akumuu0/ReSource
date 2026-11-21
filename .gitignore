@@ -1,9 +1,4 @@
+
+# Local Python virtual environments
 .venv/
-__pycache__/
-*.pyc
-db.sqlite3
-.DS_Store
-staticfiles/
-secret_key.txt
-ai_key.txt
-resource-upload.zip
+**/.venv/
