@@ -31,6 +31,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # Our apps, one per team area
     "accounts",
+    "assets",
+    "resource_requests",
+    "ai",
 ]
 
 MIDDLEWARE = [
