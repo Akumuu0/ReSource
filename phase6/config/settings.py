@@ -58,6 +58,8 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # Adds the unread notification count to every page (C8)
+                "accounts.context_processors.notifications",
             ],
         },
     },

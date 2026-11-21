@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Notifications</h1>
+  {% if unread_count %}
+  <form method="post" action="{% url 'notifications_read' %}">{% csrf_token %}
+    <button class="button">Mark all as read</button>
+  </form>
+  {% endif %}
+</div>
+<table class="table">
+  <thead><tr><th>When</th><th>Event</th><th>Message</th><th></th></tr></thead>
+  <tbody>
+  {% for note in notifications %}
+    <tr class="{% if not note.is_read %}unread{% endif %}">
+      <td class="nowrap">{{ note.created_at|date:"d/m/Y H:i" }}</td>
+      <td><span class="pill">{{ note.event_type }}</span></td>
+      <td>{{ note.message }}</td>
+      <td>{% if note.link %}<a href="{{ note.link }}">Open</a>{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4" class="muted">No notifications yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
