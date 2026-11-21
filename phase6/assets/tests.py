@@ -1,4 +1,5 @@
 """Tests for asset rules: the state machine, history, permissions and search (C2, C3, C6)."""
+from datetime import date
 from decimal import Decimal
 
 from django.core.exceptions import PermissionDenied
@@ -6,6 +7,7 @@ from django.test import TestCase
 
 from accounts.common import BusinessRuleError
 from accounts.sample_data import build_sample_world
+from resource_requests.services import RequestService
 
 from .lifecycle import AssetStateMachine
 from .models import Asset, LifecycleEvent
@@ -86,6 +88,10 @@ class AssetServiceTests(TestCase):
         AssetService.publish(self.w.eng_coord, asset)
         self.assertEqual((asset.state, asset.available_quantity), (Asset.AVAILABLE, 4))
 
+    def test_withdraw_is_refused_while_a_request_is_open(self):
+        RequestService.submit(self.w.physics_rep, self.w.scope, 1, "Teaching lab", date(2099, 1, 1))
+        with self.assertRaises(BusinessRuleError):
+            AssetService.withdraw(self.w.eng_coord, self.w.scope)
 
     def test_search_shows_only_published_assets_and_applies_filters(self):
         AssetService.register(self.w.eng_coord, dict(NEW_ASSET, category=self.w.lab))  # draft, hidden

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Request {{ asset.code }}{% endblock %}
+{% block content %}
+<h1>Request {{ asset.code }} · {{ asset.name }}</h1>
+<div class="columns">
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="button primary">Submit request</button>
+      <a class="button" href="{% url 'asset_detail' asset.pk %}">Back</a>
+    </form>
+  </div>
+  <div class="card">
+    <h2>The asset</h2>
+    <dl class="details">
+      <dt>Owner</dt><dd>{{ asset.department }}</dd>
+      <dt>Condition</dt><dd>{{ asset.condition }}</dd>
+      <dt>Free units</dt><dd>{{ asset.available_quantity }}</dd>
+    </dl>
+    <p class="muted small">After you submit, the Asset Coordinator of {{ asset.department }} releases the request,
+      then an Administrator approves it. You will get a notification at each step.</p>
+  </div>
+</div>
+{% endblock %}

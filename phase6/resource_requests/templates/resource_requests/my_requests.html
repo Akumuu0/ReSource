@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}My requests{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>My requests</h1>
+</div>
+{% include "resource_requests/_request_table.html" with rows=requests %}
+{% endblock %}

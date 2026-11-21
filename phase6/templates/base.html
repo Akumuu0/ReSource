@@ -33,6 +33,12 @@
       <a href="{% url 'my_assets' %}" class="{% if page == 'my_assets' %}active{% endif %}">Department assets</a>
       <a href="{% url 'asset_create' %}" class="{% if page == 'asset_create' or page == 'asset_edit' %}active{% endif %}">Register asset</a>
     {% endif %}
+    {% if user.is_representative %}
+      <a href="{% url 'my_requests' %}" class="{% if page == 'my_requests' or page == 'request_create' %}active{% endif %}">My requests</a>
+      <a href="{% url 'tasks' %}" class="{% if page == 'tasks' or page == 'request_matches' %}active{% endif %}">Matches and tasks</a>
+    {% else %}
+      <a href="{% url 'tasks' %}" class="{% if page == 'tasks' or page == 'request_detail' %}active{% endif %}">{% if user.is_administrator %}Approvals{% else %}Releases and transfers{% endif %}</a>
+    {% endif %}
     <a href="{% url 'notifications' %}" class="{% if page == 'notifications' %}active{% endif %}">Notifications</a>
     {% if user.is_administrator %}<a href="{% url 'admin:index' %}">Admin site</a>{% endif %}
   </nav>

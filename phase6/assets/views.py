@@ -49,6 +49,9 @@ def asset_detail(request, pk):
         "can_edit": is_owner and asset.state == Asset.DRAFT,
         "can_publish": is_owner and asset.state == Asset.DRAFT,
         "can_withdraw": is_owner and asset.state == Asset.AVAILABLE,
+        # Not for the owner's own department: the transfer would change nothing (C5).
+        "can_request": (user.is_representative and asset.state == Asset.AVAILABLE and asset.available_quantity > 0
+                        and asset.department_id != user.department_id),
     }
     return render(request, "assets/asset_detail.html", context)
 

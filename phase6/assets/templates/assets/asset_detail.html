@@ -37,6 +37,9 @@
         <button class="button danger">Withdraw</button>
       </form>
     {% endif %}
+    {% if can_request %}
+      <a class="button primary" href="{% url 'request_create' asset.pk %}">Request this asset</a>
+    {% endif %}
     {% if not can_edit and not can_publish and not can_withdraw and not can_request %}
       <p class="muted">No actions for you on this asset in its current state.</p>
     {% endif %}

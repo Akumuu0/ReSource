@@ -1,0 +1,19 @@
+{# A reusable table of requests. Expects a list called "rows". #}
+<table class="table">
+  <thead><tr><th>Code</th><th>Asset / need</th><th>Qty</th><th>From</th><th>Owner</th><th>Needed by</th><th>State</th></tr></thead>
+  <tbody>
+  {% for req in rows %}
+    <tr>
+      <td class="nowrap"><a href="{% url 'request_detail' req.pk %}">{{ req.code }}</a></td>
+      <td>{% if req.asset %}{{ req.asset.name }}{% else %}<em>Need:</em> {{ req.purpose|truncatechars:50 }}{% endif %}</td>
+      <td>{{ req.quantity }}</td>
+      <td>{{ req.department }}</td>
+      <td>{{ req.owner_department|default:"—" }}</td>
+      <td class="nowrap">{{ req.needed_by|date:"d/m/Y" }}</td>
+      <td><span class="state">{{ req.state }}</span></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="muted">Nothing here.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

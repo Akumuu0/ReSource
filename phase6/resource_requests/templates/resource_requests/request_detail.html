@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ req.code }}{% endblock %}
+{% block content %}
+{# Design mockup 7.4: the facts and the decision on the left, how the asset was chosen and the history on the right. #}
+<div class="row-between">
+  <h1>{% if can_approve %}Approve request{% else %}Request{% endif %} {{ req.code }}</h1>
+  <span class="state big">{{ req.state }}</span>
+</div>
+<p class="subtitle">
+  {% for approval in approvals %}{% if approval.step == "Release" and approval.decision == "Approved" %}Released by {{ approval.decided_by.display_name }} ({{ approval.decided_by.department }}) · {{ approval.decided_at|date:"d/m/Y H:i" }} · {% endif %}{% endfor %}
+  {% if can_approve %}{% if involved %}<strong>you submitted or released this request, so you cannot approve it (FR-4.4)</strong>{% else %}you did not submit or release this request (FR-4.4){% endif %}{% else %}made {{ req.created_at|date:"d/m/Y H:i" }}{% endif %}
+</p>
+
+<ol class="steps">
+  {% for label, done in req.progress %}<li class="{% if done %}done{% endif %}">{{ label }}</li>{% endfor %}
+</ol>
+
+{% if req.reason %}<div class="message {% if req.state == 'Rejected' %}error{% else %}info{% endif %}"><strong>Reason:</strong> {{ req.reason }}</div>{% endif %}
+
+<div class="two-col">
+  <div class="card">
+    <h2>Request and asset</h2>
+    <table class="kv">
+      <tr><th>Requesting department</th><td>{{ req.department }} ({{ req.requester.display_name }}, {{ req.requester.get_role_display }})</td></tr>
+      <tr><th>Asset</th><td>{% if req.asset %}<a href="{% url 'asset_detail' req.asset.pk %}">{{ req.asset.code }} · {{ req.asset.name }}</a>{% else %}<em>Open need, no asset chosen yet</em>{% endif %}</td></tr>
+      {% if req.category %}<tr><th>Category</th><td>{{ req.category }}</td></tr>{% endif %}
+      <tr><th>Quantity</th><td>{{ req.quantity }}{% if req.asset and req.state in "Submitted Released" %} of {{ req.asset.available_quantity }} free (checked again on approval, FR-4.5){% endif %}</td></tr>
+      {% if req.owner_department %}<tr><th>Owner and location</th><td>{{ req.owner_department }} · {{ req.owner_department.campus }}</td></tr>{% endif %}
+      {% if req.asset %}<tr><th>Estimated value</th><td>AED {{ req.estimated_value|floatformat:"0g" }} ({{ req.quantity }} × AED {{ req.asset.estimated_value|floatformat:"-2g" }})</td></tr>{% endif %}
+      <tr><th>Purpose</th><td>{{ req.purpose }}</td></tr>
+      {% if req.specifications %}<tr><th>Specifications</th><td>{{ req.specifications }}</td></tr>{% endif %}
+      {% if req.min_condition %}<tr><th>Minimum condition</th><td>{{ req.min_condition }}</td></tr>{% endif %}
+      <tr><th>Needed by</th><td>{{ req.needed_by|date:"d/m/Y" }} · urgency {{ req.urgency }}</td></tr>
+      {% if transfer %}<tr><th>Transfer</th><td><span class="state">{{ transfer.state }}</span>
+        {{ transfer.quantity }} unit(s) as <a href="{% url 'asset_detail' transfer.asset.pk %}">{{ transfer.asset.code }}</a>,
+        {{ transfer.from_department }} → {{ transfer.to_department }}</td></tr>{% endif %}
+    </table>
+
+    {% if can_cancel %}
+      <form method="post" action="{% url 'request_cancel' req.pk %}" class="reason-form">{% csrf_token %}
+        <input name="reason" placeholder="Reason for cancelling (optional)">
+        <button class="button">Cancel request</button>
+      </form>
+    {% endif %}
+
+    {% if not can_choose_match and not can_release and not can_approve and not can_hand_over and not can_confirm and not can_cancel %}
+      <p class="muted small">Nothing is waiting for you on this request.</p>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>History</h2>
+      {% for when, text in history %}
+        <p class="small"><span class="muted nowrap">{{ when|date:"d/m H:i" }}</span> · {{ text }}</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

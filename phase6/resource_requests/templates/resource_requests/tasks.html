@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}My tasks{% endblock %}
+{% block content %}
+<h1>My tasks</h1>
+<p class="muted">Requests waiting for you as {{ user.get_role_display }} of {{ user.department }}.</p>
+{% for title, rows in sections %}
+  <h2>{{ title }}</h2>
+  {% include "resource_requests/_request_table.html" with rows=rows %}
+{% endfor %}
+{% endblock %}
