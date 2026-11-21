@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Search assets{% endblock %}
+{% block content %}
+<h1>Search published assets</h1>
+<form method="get" class="filters">
+  {{ form.q.label_tag }} {{ form.q }}
+  {{ form.category }} {{ form.condition }} {{ form.department }}
+  <button class="button primary">Search</button>
+  <a class="button" href="{% url 'asset_list' %}">Clear</a>
+</form>
+
+<table class="table">
+  <thead><tr><th>Code</th><th>Name</th><th>Category</th><th>Condition</th><th>Department</th><th>Available</th><th>Value / unit</th></tr></thead>
+  <tbody>
+  {% for asset in assets %}
+    <tr>
+      <td class="nowrap"><a href="{% url 'asset_detail' asset.pk %}">{{ asset.code }}</a></td>
+      <td>{{ asset.name }}</td>
+      <td>{{ asset.category }}</td>
+      <td>{{ asset.condition }}</td>
+      <td>{{ asset.department }}</td>
+      <td>{{ asset.available_quantity }}</td>
+      <td class="nowrap">AED {{ asset.estimated_value|floatformat:0 }}</td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="muted">No published assets match your search.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

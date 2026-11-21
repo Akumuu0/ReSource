@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ asset.code }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ asset.code }} · {{ asset.name }}</h1>
+  <span class="state big">{{ asset.state }}</span>
+</div>
+
+<div class="columns">
+  <div class="card">
+    <h2>Details</h2>
+    <dl class="details">
+      <dt>Description</dt><dd>{{ asset.description }}</dd>
+      <dt>Category</dt><dd>{{ asset.category }}</dd>
+      <dt>Condition</dt><dd>{{ asset.condition }}</dd>
+      <dt>Tags</dt><dd>{% for tag in asset.tag_list %}<span class="pill">{{ tag }}</span> {% empty %}<span class="muted">none</span>{% endfor %}</dd>
+      <dt>Owner department</dt><dd>{{ asset.department }} ({{ asset.department.campus }})</dd>
+      <dt>Units</dt><dd>{{ asset.quantity }} ({{ asset.available_quantity }} free to request)</dd>
+      <dt>Value per unit</dt><dd>AED {{ asset.estimated_value }}</dd>
+      <dt>Weight per unit</dt><dd>{{ asset.weight_kg }} kg</dd>
+      <dt>Repair cost per unit</dt><dd>{% if asset.repair_cost %}AED {{ asset.repair_cost }}{% else %}none expected{% endif %}</dd>
+      {% if asset.parent %}<dt>Split from</dt><dd><a href="{% url 'asset_detail' asset.parent.pk %}">{{ asset.parent.code }}</a></dd>{% endif %}
+      {% if parts %}<dt>Units moved to</dt><dd>{% for part in parts %}<a href="{% url 'asset_detail' part.pk %}">{{ part.code }}</a> ({{ part.quantity }}, {{ part.state }}) {% endfor %}</dd>{% endif %}
+    </dl>
+  </div>
+
+  <div class="card">
+    <h2>Actions</h2>
+    {% if can_edit %}<a class="button" href="{% url 'asset_edit' asset.pk %}">Edit draft</a>{% endif %}
+    {% if can_publish %}
+      <form method="post" action="{% url 'asset_publish' asset.pk %}" class="inline">{% csrf_token %}
+        <button class="button primary">Publish as surplus</button>
+      </form>
+    {% endif %}
+    {% if can_withdraw %}
+      <form method="post" action="{% url 'asset_withdraw' asset.pk %}" class="inline">{% csrf_token %}
+        <button class="button danger">Withdraw</button>
+      </form>
+    {% endif %}
+    {% if not can_edit and not can_publish and not can_withdraw and not can_request %}
+      <p class="muted">No actions for you on this asset in its current state.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h2>Life-cycle history</h2>
+  <table class="table">
+    <thead><tr><th>When</th><th>Who</th><th>What</th><th>Old state</th><th>New state</th><th>Note</th></tr></thead>
+    <tbody>
+    {% for event in events %}
+      <tr>
+        <td class="nowrap">{{ event.occurred_at|date:"d/m/Y H:i" }}</td>
+        <td>{{ event.performed_by.display_name }}</td>
+        <td>{{ event.action }}</td>
+        <td>{{ event.old_state|default:"—" }}</td>
+        <td>{{ event.new_state }}</td>
+        <td>{{ event.note }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -26,6 +26,11 @@
   <nav class="sidebar">
     <div class="who-am-i"><strong>{{ user.display_name }}</strong>{{ user.get_role_display }}</div>
     <a href="{% url 'home' %}" class="{% if page == 'home' %}active{% endif %}">Home</a>
+    <a href="{% url 'asset_list' %}" class="{% if page == 'asset_list' or page == 'asset_detail' %}active{% endif %}">Assets</a>
+    {% if user.is_coordinator %}
+      <a href="{% url 'my_assets' %}" class="{% if page == 'my_assets' %}active{% endif %}">Department assets</a>
+      <a href="{% url 'asset_create' %}" class="{% if page == 'asset_create' or page == 'asset_edit' %}active{% endif %}">Register asset</a>
+    {% endif %}
     {% if user.is_administrator %}<a href="{% url 'admin:index' %}">Admin site</a>{% endif %}
   </nav>
   {% endwith %}

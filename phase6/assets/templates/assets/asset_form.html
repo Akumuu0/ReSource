@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{% if asset %}Edit {{ asset.code }}{% else %}Register asset{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if asset %}Edit draft {{ asset.code }}{% else %}Register an asset{% endif %}</h1>
+<p class="subtitle">Saved as a <strong>Draft</strong> of {{ user.department }}; not visible to other departments until published.</p>
+
+<form method="post" class="card">
+  {% csrf_token %}
+  <h2>Asset details · owning department: {{ user.department }}</h2>
+  {% include "_field.html" with field=form.name %}
+  {% include "_field.html" with field=form.description %}
+  <div class="field-row">
+    {% include "_field.html" with field=form.category %}
+    {% include "_field.html" with field=form.condition %}
+  </div>
+  {% include "_field.html" with field=form.tags %}
+  <div class="field-row">
+    {% include "_field.html" with field=form.quantity %}
+    {% include "_field.html" with field=form.weight_kg %}
+  </div>
+  <div class="field-row">
+    {% include "_field.html" with field=form.estimated_value %}
+    {% include "_field.html" with field=form.repair_cost %}
+  </div>
+  <div class="button-row">
+    <button class="button primary">Save draft</button>
+    <span class="muted small">Publish it from its page when it is ready.</span>
+  </div>
+</form>
+{% endblock %}

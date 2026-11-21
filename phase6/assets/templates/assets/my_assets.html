@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Department assets{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Assets of {{ user.department }}</h1>
+  <a class="button primary" href="{% url 'asset_create' %}">Register asset</a>
+</div>
+<table class="table">
+  <thead><tr><th>Code</th><th>Name</th><th>Category</th><th>Condition</th><th>Units</th><th>Free</th><th>State</th></tr></thead>
+  <tbody>
+  {% for asset in assets %}
+    <tr>
+      <td class="nowrap"><a href="{% url 'asset_detail' asset.pk %}">{{ asset.code }}</a></td>
+      <td>{{ asset.name }}</td>
+      <td>{{ asset.category }}</td>
+      <td>{{ asset.condition }}</td>
+      <td>{{ asset.quantity }}</td>
+      <td>{{ asset.available_quantity }}</td>
+      <td><span class="state">{{ asset.state }}</span></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="7" class="muted">No assets yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
