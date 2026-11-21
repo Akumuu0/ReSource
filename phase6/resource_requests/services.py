@@ -1,6 +1,7 @@
-"""Request rules.
+"""Request, approval and transfer rules.
 
-Design: Requests and Reservations module (Table 16-1).
+Design: Requests and Reservations, Approvals and Transfers modules (Table 16-1),
+sequence diagrams 10.1 (release and approve) and 10.2 (transfer).
 Every method checks the user's role and department first, then the request state.
 """
 from django.core.exceptions import PermissionDenied
@@ -10,15 +11,23 @@ from django.utils import timezone
 
 from accounts.common import BusinessRuleError, next_code
 from accounts.models import Notification, User
-from accounts.permissions import require_role
+from accounts.permissions import require_department, require_role
 from accounts.services import NotificationService
 from assets.models import Asset
+from assets.services import AssetService
 
-from .models import Request
+from .models import Approval, Request, Transfer
 
 
 def link_to(request):
     return reverse("request_detail", args=[request.pk])
+
+
+def require_reason(reason):
+    reason = (reason or "").strip()
+    if not reason:
+        raise BusinessRuleError("A reason is required.")
+    return reason
 
 
 class RequestService:
@@ -101,6 +110,11 @@ class RequestService:
         RequestService.require_requester(user, request)
         RequestService.require_state(request, Request.OPEN, Request.SUBMITTED, Request.RELEASED, Request.APPROVED)
         old_state = request.state
+        if old_state == Request.APPROVED:
+            transfer = request.transfer
+            transfer.state = Transfer.CANCELLED
+            transfer.save()
+            AssetService.release_reservation(transfer.asset, user, request.code)
         request.state = Request.CANCELLED
         request.reason = (reason or "").strip() or "Cancelled by the requester."
         request.save()
@@ -133,3 +147,155 @@ class RequestService:
                 ("Arrived? Confirm receipt", Request.objects.filter(state=Request.IN_TRANSFER, department=user.department)),
             ]
         return [("Approve or reject", Request.objects.filter(state=Request.RELEASED))]
+
+
+class ApprovalService:
+    """C5: the owning Asset Coordinator releases, then an Administrator approves."""
+
+    @staticmethod
+    def check_not_involved(user, request):
+        """Nobody may approve a request they submitted or released (FR-4.4, BR-4).
+
+        We compare user IDs, not role names, so changing someone's role
+        does not get around this rule.
+        """
+        if request.requester_id == user.id:
+            raise BusinessRuleError(
+                "You submitted this request, so you cannot approve or reject it. Another Administrator must decide."
+            )
+        if any(approval.is_by(user) for approval in request.approvals.all()):
+            raise BusinessRuleError(
+                "You released this request, so you cannot also approve or reject it. Another Administrator must decide."
+            )
+
+    @staticmethod
+    @transaction.atomic
+    def release(user, request):
+        RequestService.require_state(request, Request.SUBMITTED)
+        AssetService.require_owning_coordinator(user, request.asset)
+        if request.requester_id == user.id:
+            raise BusinessRuleError("You cannot release your own request.")
+        Approval.objects.create(request=request, step=Approval.RELEASE, decision=Approval.APPROVED, decided_by=user)
+        request.state = Request.RELEASED
+        request.save()
+        NotificationService.notify(
+            [request.requester], Notification.RELEASED,
+            f"{request.code} was released by {request.owner_department} and is waiting for approval.", link_to(request),
+        )
+        NotificationService.notify(
+            NotificationService.administrators(), Notification.RELEASED,
+            f"{request.code} was released and needs your approval.", link_to(request),
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def decline(user, request, reason):
+        RequestService.require_state(request, Request.SUBMITTED)
+        AssetService.require_owning_coordinator(user, request.asset)
+        reason = require_reason(reason)
+        Approval.objects.create(request=request, step=Approval.RELEASE, decision=Approval.REJECTED,
+                                decided_by=user, reason=reason)
+        request.state = Request.REJECTED
+        request.reason = reason
+        request.save()
+        NotificationService.notify(
+            [request.requester], Notification.REJECTED,
+            f"{request.code} was declined: {reason}", link_to(request),
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def approve(user, request):
+        """Final approval. Reserving the units and saving the approval happen in ONE transaction:
+        if the units are gone, nothing is saved."""
+        require_role(user, User.ADMINISTRATOR)
+        RequestService.require_state(request, Request.RELEASED)
+        ApprovalService.check_not_involved(user, request)
+
+        reserved_asset = AssetService.reserve_units(request.asset, request.quantity, user, request.code)
+        Approval.objects.create(request=request, step=Approval.APPROVAL, decision=Approval.APPROVED, decided_by=user)
+        Transfer.objects.create(
+            request=request,
+            asset=reserved_asset,
+            quantity=request.quantity,
+            from_department=request.asset.department,
+            to_department=request.department,
+        )
+        request.state = Request.APPROVED
+        request.save()
+        NotificationService.notify(
+            [request.requester] + NotificationService.coordinators_of(request.owner_department),
+            Notification.APPROVED,
+            f"{request.code} was approved. {request.quantity} units are reserved and waiting for hand-over.",
+            link_to(request),
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def reject(user, request, reason):
+        require_role(user, User.ADMINISTRATOR)
+        RequestService.require_state(request, Request.RELEASED)
+        ApprovalService.check_not_involved(user, request)
+        reason = require_reason(reason)
+        Approval.objects.create(request=request, step=Approval.APPROVAL, decision=Approval.REJECTED,
+                                decided_by=user, reason=reason)
+        request.state = Request.REJECTED
+        request.reason = reason
+        request.save()
+        NotificationService.notify(
+            [request.requester] + NotificationService.coordinators_of(request.owner_department),
+            Notification.REJECTED,
+            f"{request.code} was rejected: {reason}",
+            link_to(request),
+        )
+
+
+class TransferService:
+    """C5: hand-over by the owner, receipt by the receiver."""
+
+    @staticmethod
+    @transaction.atomic
+    def hand_over(user, request):
+        RequestService.require_state(request, Request.APPROVED)
+        transfer = request.transfer
+        AssetService.require_owning_coordinator(user, transfer.asset)
+        AssetService.hand_over(transfer.asset, user, request.code)
+        transfer.state = Transfer.IN_TRANSFER
+        transfer.handed_over_by = user
+        transfer.handed_over_at = timezone.now()
+        transfer.save()
+        request.state = Request.IN_TRANSFER
+        request.save()
+        NotificationService.notify(
+            [request.requester], Notification.HANDED_OVER,
+            f"{request.code} has been handed over. Please confirm receipt when it arrives.", link_to(request),
+        )
+
+    @staticmethod
+    def require_receiver(user, request):
+        """Only a Department Representative or Asset Coordinator of the receiving department (FR-4.10)."""
+        require_role(user, User.REPRESENTATIVE, User.COORDINATOR)
+        require_department(user, request.department, "Only the receiving department can confirm receipt.")
+
+    @staticmethod
+    @transaction.atomic
+    def confirm_receipt(user, request, condition):
+        RequestService.require_state(request, Request.IN_TRANSFER)
+        TransferService.require_receiver(user, request)
+        if condition not in dict(Asset.CONDITION_CHOICES):
+            raise BusinessRuleError("Choose the condition on arrival.")
+        transfer = request.transfer
+        AssetService.complete_transfer(transfer.asset, user, request.department, condition, request.code)
+        transfer.state = Transfer.RECEIVED
+        transfer.received_by = user
+        transfer.received_at = timezone.now()
+        transfer.condition_on_arrival = condition
+        transfer.save()
+        request.state = Request.COMPLETED
+        request.save()
+        NotificationService.notify(
+            NotificationService.coordinators_of(transfer.from_department) + NotificationService.administrators(),
+            Notification.RECEIVED,
+            f"{request.code} was received by {request.department} (condition: {condition}).",
+            link_to(request),
+        )

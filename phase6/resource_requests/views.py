@@ -1,4 +1,4 @@
-"""Pages for requests.
+"""Pages for requests, approvals and transfers.
 
 Naming: `request` is the web request (Django's name); `req` is one of our Request records.
 Views stay thin: they read the form, call a service, and show the result.
@@ -14,10 +14,11 @@ from accounts.common import BusinessRuleError
 from accounts.models import User
 from accounts.permissions import role_required
 from assets.models import Asset
+from assets.services import AssetService
 
-from .forms import RequestForm
+from .forms import ReceiptForm, RequestForm
 from .models import Request
-from .services import RequestService
+from .services import ApprovalService, RequestService, TransferService
 
 
 def run_action(request, req, action, success_message):
@@ -74,7 +75,15 @@ def request_detail(request, pk):
         "transfer": transfer,
         "approvals": approvals,
         "history": request_history(req, approvals, transfer),
+        # FR-4.4: shown to the approver; the service checks it again.
+        "involved": req.requester_id == user.id or any(approval.is_by(user) for approval in approvals),
+        "receipt_form": ReceiptForm(),
         # Which buttons to show. The services check everything again on the server.
+        "can_release": req.state == Request.SUBMITTED and AssetService.is_owning_coordinator(user, req.asset),
+        "can_approve": req.state == Request.RELEASED and user.is_administrator,
+        "can_hand_over": req.state == Request.APPROVED and AssetService.is_owning_coordinator(user, transfer.asset),
+        "can_confirm": (req.state == Request.IN_TRANSFER and user.department_id == req.department_id
+                        and not user.is_administrator),
         "can_cancel": req.requester_id == user.id and req.state in (
             Request.OPEN, Request.SUBMITTED, Request.RELEASED, Request.APPROVED),
     }
@@ -95,6 +104,57 @@ def request_history(req, approvals, transfer):
         history.append((transfer.received_at, f"Received by {transfer.received_by.display_name()}, "
                                               f"condition {transfer.condition_on_arrival}"))
     return sorted(history, key=lambda item: item[0])
+
+
+# --- C5: buttons on the request page ----------------------------------------------
+
+@require_POST
+@login_required
+def release(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req, lambda: ApprovalService.release(request.user, req),
+                      f"{req.code} released. Administrators have been notified.")
+
+
+@require_POST
+@login_required
+def decline(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req, lambda: ApprovalService.decline(request.user, req, request.POST.get("reason")),
+                      f"{req.code} declined.")
+
+
+@require_POST
+@login_required
+def approve(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req, lambda: ApprovalService.approve(request.user, req),
+                      f"{req.code} approved and {req.quantity} units reserved.")
+
+
+@require_POST
+@login_required
+def reject(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req, lambda: ApprovalService.reject(request.user, req, request.POST.get("reason")),
+                      f"{req.code} rejected.")
+
+
+@require_POST
+@login_required
+def hand_over(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req, lambda: TransferService.hand_over(request.user, req),
+                      f"{req.code} handed over. The requester has been asked to confirm receipt.")
+
+
+@require_POST
+@login_required
+def confirm_receipt(request, pk):
+    req = get_object_or_404(Request, pk=pk)
+    return run_action(request, req,
+                      lambda: TransferService.confirm_receipt(request.user, req, request.POST.get("condition")),
+                      f"Receipt of {req.code} confirmed. The asset now belongs to {req.department}.")
 
 
 @require_POST
