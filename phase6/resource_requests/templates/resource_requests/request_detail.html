@@ -36,6 +36,43 @@
         {{ transfer.from_department }} → {{ transfer.to_department }}</td></tr>{% endif %}
     </table>
 
+    {% if can_release %}
+      <p>As the owning Asset Coordinator, release this request to an Administrator or decline it.</p>
+      <form method="post" action="{% url 'request_release' req.pk %}" class="inline">{% csrf_token %}
+        <button class="button primary">Release</button>
+      </form>
+      <form method="post" action="{% url 'request_decline' req.pk %}" class="reason-form">{% csrf_token %}
+        <input name="reason" placeholder="Reason for declining (required)" required>
+        <button class="button danger">Decline</button>
+      </form>
+    {% endif %}
+
+    {% if can_approve %}
+      <form method="post" action="{% url 'request_approve' req.pk %}" class="inline">{% csrf_token %}
+        <button class="button primary">Approve</button>
+      </form>
+      <form method="post" action="{% url 'request_reject' req.pk %}" class="reason-form">{% csrf_token %}
+        <input name="reason" placeholder="Reason for rejecting (required)" required>
+        <button class="button danger">Reject</button>
+      </form>
+      <p class="small muted">Approval reserves {{ req.quantity }} unit(s) in the same step (FR-3.8). Rejecting needs a reason.</p>
+    {% endif %}
+
+    {% if can_hand_over %}
+      <p>The units are reserved. Hand them over to {{ req.department }}.</p>
+      <form method="post" action="{% url 'request_hand_over' req.pk %}">{% csrf_token %}
+        <button class="button primary">Mark as handed over</button>
+      </form>
+    {% endif %}
+
+    {% if can_confirm %}
+      <p>Has it arrived? Confirm receipt and record its condition. {{ req.department }} then becomes the owner.</p>
+      <form method="post" action="{% url 'request_confirm' req.pk %}" class="reason-form">{% csrf_token %}
+        {{ receipt_form.condition.label_tag }} {{ receipt_form.condition }}
+        <button class="button primary">Confirm receipt</button>
+      </form>
+    {% endif %}
+
     {% if can_cancel %}
       <form method="post" action="{% url 'request_cancel' req.pk %}" class="reason-form">{% csrf_token %}
         <input name="reason" placeholder="Reason for cancelling (optional)">
