@@ -4,7 +4,7 @@ Views never change assets directly; they call these methods.
 """
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 
 from accounts.common import BusinessRuleError, next_code
 from accounts.models import User
@@ -102,3 +102,80 @@ class AssetService:
         if department:
             assets = assets.filter(department=department)
         return assets.select_related("category", "department")
+
+    # --- C5: reserve, hand over, complete --------------------------------------
+    # These are called by ApprovalService and TransferService, which check
+    # the user's permissions first.
+
+    @staticmethod
+    @transaction.atomic
+    def reserve_units(asset, quantity, user, request_code):
+        """Reserve units for an approved request and return the asset record that holds them.
+
+        The UPDATE below only changes the row if enough units are still free at
+        this moment. If two approvals race for the last unit, only one UPDATE
+        succeeds; the other gets 0 rows and is refused (design FR-4.5, QUA-4).
+        """
+        updated_rows = Asset.objects.filter(
+            pk=asset.pk, state=Asset.AVAILABLE, available_quantity__gte=quantity
+        ).update(available_quantity=F("available_quantity") - quantity)
+
+        asset.refresh_from_db()
+        if updated_rows == 0:
+            raise BusinessRuleError(
+                f"Not enough units: {asset.code} has {asset.available_quantity} free "
+                f"(state {asset.state}) but the request needs {quantity}."
+            )
+
+        if asset.available_quantity == 0:
+            # No free units left: the whole record is now reserved.
+            AssetStateMachine.change_state(asset, Asset.RESERVED, user, "Reserved", f"All units reserved for {request_code}")
+            return asset
+
+        # Only some units are taken: they get their own record, linked to this one (FR-4.15).
+        asset.quantity -= quantity
+        asset.save()
+        part = Asset.objects.create(
+            code=next_code(Asset, "A"),
+            name=asset.name,
+            description=asset.description,
+            category=asset.category,
+            condition=asset.condition,
+            tags=asset.tags,
+            department=asset.department,
+            quantity=quantity,
+            available_quantity=0,
+            estimated_value=asset.estimated_value,
+            weight_kg=asset.weight_kg,
+            repair_cost=asset.repair_cost,
+            state=Asset.AVAILABLE,
+            parent=asset,
+            created_by=user,
+        )
+        AssetStateMachine.record(asset, user, "Units split off", old_state=Asset.AVAILABLE,
+                                 note=f"{quantity} units moved to {part.code} for {request_code}")
+        AssetStateMachine.record(part, user, "Created from split", note=f"{quantity} units taken from {asset.code}")
+        AssetStateMachine.change_state(part, Asset.RESERVED, user, "Reserved", f"Reserved for {request_code}")
+        return part
+
+    @staticmethod
+    def release_reservation(asset, user, request_code):
+        """Put reserved units back on offer (request cancelled after approval)."""
+        asset.available_quantity = asset.quantity
+        AssetStateMachine.change_state(asset, Asset.AVAILABLE, user, "Reservation released",
+                                       f"{request_code} was cancelled")
+
+    @staticmethod
+    def hand_over(asset, user, request_code):
+        AssetStateMachine.change_state(asset, Asset.IN_TRANSFER, user, "Handed over", f"For {request_code}")
+
+    @staticmethod
+    def complete_transfer(asset, user, to_department, condition, request_code):
+        """Receipt confirmed: the receiving department becomes the owner (FR-4.11)."""
+        old_department = asset.department
+        asset.department = to_department
+        asset.condition = condition
+        AssetStateMachine.change_state(
+            asset, Asset.IN_USE, user, "Received",
+            f"{request_code}: owner changed from {old_department} to {to_department}, condition on arrival {condition}",
+        )
