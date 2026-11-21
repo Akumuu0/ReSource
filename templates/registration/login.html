@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Sign in to ReSource</h1>
+  <p class="muted">Campus resource exchange and asset life-cycle system.</p>
+  {% if form.errors %}<div class="message error">Wrong username or password.</div>{% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="button primary">Sign in</button>
+  </form>
+  <p class="muted small">Demo users are listed in README.md (password <code>demo1234</code>).</p>
+</div>
+{% endblock %}

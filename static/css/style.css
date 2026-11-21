@@ -1,0 +1,202 @@
+/* ReSource – one plain stylesheet for every page, following the mockups of design Section 7. */
+
+:root {
+  --ink: #1f2421;          /* header bar and dark buttons */
+  --green: #2f6b4f;        /* AI panels and primary actions */
+  --green-dark: #24543d;
+  --green-light: #edf6f0;
+  --red: #a4262c;
+  --red-light: #fdeceb;
+  --amber: #8a5a00;
+  --amber-light: #fbf1d9;
+  --blue-light: #e8f0fe;
+  --text: #1d2420;
+  --muted: #5f6b65;
+  --line: #d6dcd8;
+  --page: #f4f6f5;
+  --white: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--page);
+}
+
+a { color: var(--green-dark); }
+h1 { font-size: 1.55rem; margin: 0.2rem 0 0.2rem; }
+h2 { font-size: 1.1rem; margin: 0 0 0.75rem; }
+code { background: var(--green-light); padding: 0 4px; border-radius: 4px; }
+.subtitle { color: var(--muted); margin: 0 0 18px; }
+
+/* --- Header bar ------------------------------------------------------------ */
+.topbar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px;
+  padding: 10px 24px; background: var(--ink); color: var(--white);
+}
+.topbar a { color: var(--white); text-decoration: none; }
+.brand { font-weight: 700; font-size: 1.3rem; }
+.brand small { font-weight: 400; font-size: 0.8rem; opacity: 0.75; margin-left: 10px; }
+.who { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.new { border: 1px solid #6b746f; border-radius: 12px; padding: 1px 10px; font-size: 0.85rem; }
+.badge { font-weight: 700; color: #ffd24d; }
+.badge.zero { color: inherit; font-weight: 400; }
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
+  border-radius: 50%; background: var(--white); color: var(--ink); font-weight: 700; font-size: 0.75rem;
+}
+button.link { background: none; border: 0; color: var(--white); cursor: pointer; text-decoration: underline; font: inherit; padding: 0; }
+
+/* --- Left menu and page ---------------------------------------------------- */
+.app { display: grid; grid-template-columns: 200px 1fr; min-height: calc(100vh - 52px); }
+.sidebar { background: var(--white); border-right: 1px solid var(--line); padding: 16px 10px; }
+.sidebar a { display: block; padding: 7px 12px; margin-bottom: 2px; border-radius: 6px; color: var(--text); text-decoration: none; }
+.sidebar a:hover { background: var(--page); }
+.sidebar a.active { background: #e3e7e5; font-weight: 700; }
+.sidebar .who-am-i { padding: 0 12px 12px; margin-bottom: 8px; border-bottom: 1px solid var(--line); font-size: 0.85rem; color: var(--muted); }
+.sidebar .who-am-i strong { display: block; color: var(--text); }
+.page { padding: 20px 26px 60px; max-width: 1240px; width: 100%; }
+.page.alone { margin: 0 auto; max-width: 1100px; }
+
+/* --- Cards and grids ------------------------------------------------------- */
+.card { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 18px; }
+.card.narrow { max-width: 440px; margin: 40px auto; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.muted { color: var(--muted); }
+.small { font-size: 0.85rem; }
+.nowrap { white-space: nowrap; }
+
+/* --- Stat cards ------------------------------------------------------------ */
+.card.stat { display: flex; flex-direction: column; text-decoration: none; color: var(--text); }
+.card.stat .big { font-size: 2rem; font-weight: 700; color: var(--green-dark); }
+.kpi { margin-bottom: 0; }
+.kpi .label { font-weight: 600; font-size: 0.9rem; }
+.kpi .value { font-size: 1.8rem; font-weight: 700; line-height: 1.2; margin: 4px 0; }
+.kpi .value small { font-size: 0.95rem; font-weight: 600; }
+.formula { font-family: Menlo, Consolas, monospace; font-size: 0.82rem; }
+
+/* --- Tables ---------------------------------------------------------------- */
+.table { width: 100%; border-collapse: collapse; background: var(--white); margin-bottom: 12px; }
+.table th, .table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table th { background: #f0f2f1; font-weight: 600; }
+.table td:first-child { white-space: nowrap; }  /* codes and dates stay on one line */
+.table tr.unread td { font-weight: 600; background: var(--amber-light); }
+.kv { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+.kv th, .kv td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.kv th { width: 38%; background: #f0f2f1; font-weight: 600; }
+
+/* --- Details lists --------------------------------------------------------- */
+.details { display: grid; grid-template-columns: 150px 1fr; gap: 6px 12px; margin: 0; }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; }
+
+/* --- Pills, states and confidence badges ----------------------------------- */
+.pill { display: inline-block; padding: 1px 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--white); font-size: 0.82rem; }
+.pill.ok { border-color: var(--green); color: var(--green-dark); }
+.state { display: inline-block; padding: 1px 10px; border-radius: 12px; border: 1px solid var(--ink); font-weight: 600; font-size: 0.82rem; white-space: nowrap; background: var(--white); }
+.state.big { font-size: 0.95rem; }
+.conf { display: inline-block; padding: 1px 9px; border-radius: 10px; font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+.conf.High { border: 1px solid var(--green); color: var(--green-dark); background: var(--green-light); }
+.conf.Medium { border: 1px solid #c99a2e; color: var(--amber); background: var(--amber-light); }
+.conf.Low, .conf.Unknown { border: 1px solid var(--red); color: var(--red); background: var(--red-light); }
+.chip { display: inline-block; padding: 1px 7px; border-radius: 4px; background: var(--green); color: var(--white); font-size: 0.72rem; font-weight: 700; vertical-align: middle; margin-right: 6px; }
+.status { font-size: 0.8rem; font-weight: 700; }
+.status.Accepted { color: var(--green-dark); }
+.status.Rejected { color: var(--red); }
+
+/* --- Progress steps on the request page ------------------------------------ */
+.steps { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 18px; }
+.steps li { padding: 3px 12px; border-radius: 14px; background: var(--line); color: var(--muted); font-size: 0.9rem; }
+.steps li.done { background: var(--green); color: var(--white); }
+
+/* --- Forms and buttons ----------------------------------------------------- */
+input, select, textarea { font: inherit; padding: 6px 8px; border: 1px solid #b9c1bd; border-radius: 6px; max-width: 100%; background: var(--white); }
+textarea { width: 100%; }
+form p label, .field label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 2px; }
+form p input:not([type=checkbox]), form p select, .field input, .field select, .field textarea { width: 100%; }
+.field { margin-bottom: 10px; }
+.field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0 10px; }
+.helptext { display: block; color: var(--muted); font-size: 0.8rem; }
+.errorlist { color: var(--red); margin: 2px 0; padding-left: 18px; font-size: 0.85rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+.inline { display: inline-block; margin: 0 6px 6px 0; }
+.reason-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; }
+.reason-form input { flex: 1; min-width: 160px; }
+.button-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.button {
+  display: inline-block; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--ink);
+  background: var(--white); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.button:hover { background: var(--page); }
+.button.primary { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.button.primary:hover { background: #3a423e; }
+.button.danger { color: var(--red); border-color: var(--red); background: var(--white); }
+.button.danger:hover { background: var(--red-light); }
+.button.small { padding: 2px 10px; font-size: 0.85rem; }
+.button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* --- Messages -------------------------------------------------------------- */
+.message { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; background: var(--blue-light); }
+.message.success { background: var(--green-light); }
+.message.error { background: var(--red-light); color: var(--red); font-weight: 600; }
+.message.warning, .warning { background: var(--amber-light); padding: 8px 12px; border-radius: 8px; }
+.note { border-left: 4px solid #c99a2e; background: var(--amber-light); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 0.9rem; }
+.note.ok { border-left-color: var(--green); background: var(--green-light); }
+
+/* --- AI panels (design Section 7: AI result, confidence, reason, decision) -- */
+.ai-panel { border: 2px solid var(--green); border-radius: 10px; background: #f6fbf8; padding: 14px 16px; margin-bottom: 18px; }
+.ai-panel h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.ai-panel .table th { background: transparent; border-bottom: 1px solid var(--line); }
+.ai-panel .table { background: transparent; }
+.fallback { display: inline-block; background: var(--amber-light); color: var(--amber); padding: 2px 10px; border-radius: 6px; font-weight: 600; font-size: 0.88rem; }
+.ai-down { border: 2px dashed #9aa39f; border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; background: #fafbfa; font-size: 0.9rem; }
+.ai-down.active { border-color: #c99a2e; background: var(--amber-light); }
+.ai-down h3 { margin: 0 0 4px; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.small-print { color: var(--muted); font-size: 0.8rem; margin: 8px 0 0; }
+
+/* --- Match cards and factor bars ------------------------------------------- */
+.match-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; }
+.bars { margin: 0; }
+.bar-row { display: grid; grid-template-columns: 150px 1fr 38px; gap: 8px; align-items: center; font-size: 0.85rem; margin-bottom: 3px; }
+.bar { height: 9px; background: #e3e7e5; border-radius: 5px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--ink); border-radius: 5px; }
+.bar-row b { text-align: right; }
+.score-title { font-size: 1.15rem; font-weight: 700; }
+.other-matches { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.other-matches .card { margin-bottom: 0; }
+details summary { cursor: pointer; color: var(--green-dark); font-size: 0.88rem; }
+
+/* --- Trend bars on the dashboard ------------------------------------------- */
+.trend { display: flex; align-items: flex-end; gap: 10px; height: 150px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.trend div { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; font-size: 0.8rem; }
+.trend span.column { width: 70%; background: var(--ink); border-radius: 4px 4px 0 0; min-height: 2px; }
+.trend-labels { display: flex; gap: 10px; font-size: 0.78rem; color: var(--muted); }
+.trend-labels span { flex: 1; text-align: center; }
+
+/* --- Number checks in the AI summary --------------------------------------- */
+.check { display: inline-block; padding: 0 6px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; margin-left: 2px; }
+.check.ok { border: 1px solid var(--green); color: var(--green-dark); background: var(--green-light); }
+.check.bad { border: 1px solid var(--red); color: var(--red); background: var(--red-light); }
+.summary-text { font-size: 1rem; line-height: 1.8; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: flex; overflow-x: auto; gap: 4px; padding: 8px 10px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .sidebar a { white-space: nowrap; margin: 0; }
+  .sidebar .who-am-i { display: none; }
+  .two-col, .match-top { grid-template-columns: 1fr; }
+  .topbar, .page { padding-left: 16px; padding-right: 16px; }
+  .brand small { display: none; }
+  .details { grid-template-columns: 1fr; }
+  .table { display: block; overflow-x: auto; }
+  .bar-row { grid-template-columns: 120px 1fr 34px; }
+}

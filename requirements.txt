@@ -1,0 +1,2 @@
+Django>=5.2,<6.0
+google-genai>=3.5,<4

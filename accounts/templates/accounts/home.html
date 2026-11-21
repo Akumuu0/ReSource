@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Welcome, {{ user.display_name }}</h1>
+<p class="muted">You are signed in as <strong>{{ user.get_role_display }}</strong> of <strong>{{ user.department }}</strong>.</p>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Not allowed</h1>
+  <p>{{ exception|default:"Your role or department is not allowed to do this." }}</p>
+  <p class="muted">The server checks every action against your role and department.</p>
+  <a class="button" href="{% url 'home' %}">Back to home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ReSource{% endblock %} · ReSource</title>
+  {# ?v=2: raise the number after changing the CSS so browsers do not keep the old copy #}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=2">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{% url 'home' %}">ReSource<small>Circular Campus Resource Exchange</small></a>
+  {% if user.is_authenticated %}
+  <div class="who">
+    <span>{{ user.department }} · {{ user.get_role_display }}</span>
+    <span class="avatar" title="{{ user.display_name }}">{{ user.role }}</span>
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link">Sign out</button></form>
+  </div>
+  {% endif %}
+</header>
+
+{% if user.is_authenticated %}
+<div class="app">
+  {# Left menu (design Section 7). Each role sees only its own pages; the server checks again. #}
+  {% with page=request.resolver_match.url_name %}
+  <nav class="sidebar">
+    <div class="who-am-i"><strong>{{ user.display_name }}</strong>{{ user.get_role_display }}</div>
+    <a href="{% url 'home' %}" class="{% if page == 'home' %}active{% endif %}">Home</a>
+    {% if user.is_administrator %}<a href="{% url 'admin:index' %}">Admin site</a>{% endif %}
+  </nav>
+  {% endwith %}
+{% endif %}
+  <main class="page{% if not user.is_authenticated %} alone{% endif %}">
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+{% if user.is_authenticated %}</div>{% endif %}
+</body>
+</html>
