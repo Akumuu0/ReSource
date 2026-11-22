@@ -96,3 +96,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# AI settings (design DR-4). With no key the app uses the rule-based fallbacks.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+AI_MODEL = "gemini-3.5-flash-lite"  # Google's fastest, cheapest stable Gemini model
+AI_TIMEOUT_SECONDS = 20

@@ -1,30 +1,85 @@
 {% extends "base.html" %}
 {% block title %}{% if asset %}Edit {{ asset.code }}{% else %}Register asset{% endif %}{% endblock %}
 {% block content %}
+{# Design mockup 7.1: the form on the left, the AI suggestions in their own panel on the right. #}
 <h1>{% if asset %}Edit draft {{ asset.code }}{% else %}Register an asset{% endif %}</h1>
 <p class="subtitle">Saved as a <strong>Draft</strong> of {{ user.department }}; not visible to other departments until published.</p>
 
-<form method="post" class="card">
+<form method="post">
   {% csrf_token %}
-  <h2>Asset details · owning department: {{ user.department }}</h2>
-  {% include "_field.html" with field=form.name %}
-  {% include "_field.html" with field=form.description %}
-  <div class="field-row">
-    {% include "_field.html" with field=form.category %}
-    {% include "_field.html" with field=form.condition %}
-  </div>
-  {% include "_field.html" with field=form.tags %}
-  <div class="field-row">
-    {% include "_field.html" with field=form.quantity %}
-    {% include "_field.html" with field=form.weight_kg %}
-  </div>
-  <div class="field-row">
-    {% include "_field.html" with field=form.estimated_value %}
-    {% include "_field.html" with field=form.repair_cost %}
-  </div>
-  <div class="button-row">
-    <button class="button primary">Save draft</button>
-    <span class="muted small">Publish it from its page when it is ready.</span>
+  {% if suggestion_output %}<input type="hidden" name="ai_output_id" value="{{ suggestion_output.pk }}">{% endif %}
+  <input type="hidden" name="accepted" value="{{ accepted }}">
+  <input type="hidden" name="rejected" value="{{ rejected }}">
+
+  <div class="two-col">
+    <div>
+      <div class="card">
+        <h2>Asset details · owning department: {{ user.department }}</h2>
+        {% include "_field.html" with field=form.name %}
+        {% include "_field.html" with field=form.description %}
+        <div class="field-row">
+          {% include "_field.html" with field=form.category %}
+          {% include "_field.html" with field=form.condition %}
+        </div>
+        {% include "_field.html" with field=form.tags %}
+        <div class="field-row">
+          {% include "_field.html" with field=form.quantity %}
+          {% include "_field.html" with field=form.weight_kg %}
+        </div>
+        <div class="field-row">
+          {% include "_field.html" with field=form.estimated_value %}
+          {% include "_field.html" with field=form.repair_cost %}
+        </div>
+        <div class="button-row">
+          {# formnovalidate: the browser must not ask for the category before we suggest one #}
+          <button class="button" name="action" value="suggest" formnovalidate>Suggest with AI</button>
+          <button class="button primary" name="action" value="save">Save draft</button>
+          <span class="muted small">Publish it from its page when it is ready.</span>
+        </div>
+      </div>
+      <div class="ai-down{% if suggestion_output and not suggestion_output.used_ai %} active{% endif %}">
+        <h3>When AI is unavailable</h3>
+        If the AI cannot answer within 20 seconds, ReSource suggests values from category keywords instead and labels
+        them <em>AI unavailable, rule-based result</em>. Everything you typed is kept; you can always choose the
+        category from the list yourself.
+      </div>
+    </div>
+
+    <div class="ai-panel">
+      <h2><span class="chip">AI suggestion</span> Classification</h2>
+      {% if suggestion %}
+        {% if not suggestion_output.used_ai %}<p class="fallback">{{ suggestion_output.source }} ({{ suggestion_output.note }})</p>{% endif %}
+        <table class="table">
+          <thead><tr><th>Field</th><th>Suggestion</th><th>Confidence</th><th>Your decision</th></tr></thead>
+          <tbody>
+          {% for row in rows %}
+            <tr>
+              <td><strong>{{ row.label }}</strong></td>
+              <td>{{ row.value }}</td>
+              <td><span class="conf {{ row.level }}">{{ row.level }} {{ row.confidence|floatformat:2 }}</span></td>
+              <td class="nowrap">
+                {% if row.status %}<span class="status {{ row.status }}">{{ row.status }}</span><br>{% endif %}
+                {% if row.status != "Accepted" %}<button class="button small primary" name="action" value="accept:{{ row.field }}" formnovalidate>Accept</button>{% endif %}
+                {% if row.status != "Rejected" %}<button class="button small danger" name="action" value="reject:{{ row.field }}" formnovalidate>Reject</button>{% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <div class="button-row">
+          <button class="button small" name="action" value="accept:all" formnovalidate>Accept all</button>
+          <span class="muted small">To edit a value, accept it and change it in the form.</span>
+        </div>
+        {% if suggestion.reason %}<p><strong>Why:</strong> {{ suggestion.reason }}</p>{% endif %}
+        {% if suggestion_output.confidence_level == "Low" %}<p class="note">Low confidence: check every field yourself.</p>{% endif %}
+        <p class="small-print">Nothing is saved until you press "Save draft"; your decision on each field is then recorded.
+          {% if suggestion_output.model_name %}Model: {{ suggestion_output.model_name }} · {% endif %}{{ suggestion_output.created_at|date:"d/m/Y H:i" }}</p>
+      {% else %}
+        <p>Type a name and a description, then press <strong>Suggest with AI</strong>. The AI suggests the category,
+          the condition and tags, each with its own confidence. You accept, edit or reject each one.</p>
+        <p class="small-print">Only the name and description are sent; never names of people or record codes.</p>
+      {% endif %}
+    </div>
   </div>
 </form>
 {% endblock %}
