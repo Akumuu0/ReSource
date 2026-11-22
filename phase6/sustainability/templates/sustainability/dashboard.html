@@ -1,1 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Sustainability{% endblock %}
+{% block content %}
+{# Design mockup 7.6: the figures first, the trend and the AI summary below, every formula shown. #}
+<h1>Sustainability dashboard{% if form.cleaned_data.department %} · {{ form.cleaned_data.department }}{% else %} · whole campus{% endif %}</h1>
+<p class="subtitle">Fixed formulas, not AI (FR-13.2). Estimates for internal planning, not certified carbon or financial accounts.</p>
 
+<form method="get" class="filters">
+  {{ form.date_from.label_tag }} {{ form.date_from }}
+  {{ form.date_to.label_tag }} {{ form.date_to }}
+  {{ form.department }}
+  <button class="button primary">Apply</button>
+  <a class="button" href="{% url 'dashboard' %}">All time</a>
+</form>
+
+<div class="grid">
+  {% for measure in measures %}
+  <div class="card kpi">
+    <div class="label">{{ measure.label }}</div>
+    <div class="value">{% if measure.unit == "AED" %}AED {% endif %}{{ measure.value }}{% if measure.unit != "AED" %} <small>{{ measure.unit }}</small>{% endif %}</div>
+    {% if measure.key == "co2e_kg" %}<span class="conf Medium">Estimate · EPA WARM v16</span>
+      {% if missing %}<div class="small muted">{{ missing|length }} transfer(s) left out: <a href="#missing">missing data</a></div>{% endif %}
+    {% elif measure.key == "waste_kg" %}<span class="conf Medium">Estimate · recorded weights</span>
+    {% else %}<span class="small muted">from completed transfers</span>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2>Items reused, last 6 months</h2>
+    <div class="trend">
+      {% for month in trend %}<div><b>{{ month.items }}</b><span class="column" style="height: {{ month.percent }}%"></span></div>{% endfor %}
+    </div>
+    <div class="trend-labels">{% for month in trend %}<span>{{ month.label }}</span>{% endfor %}</div>
+    <p class="small-print">Counts the units of every transfer whose receipt was confirmed in that month{% if form.cleaned_data.department %}, received by {{ form.cleaned_data.department }}{% endif %}.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>How each figure is calculated</h2>
+  <table class="table">
+    <thead><tr><th>Figure</th><th>Formula</th><th>Source</th></tr></thead>
+    <tbody>
+    {% for measure in measures %}
+      <tr><td>{{ measure.label }}</td><td class="formula">{{ measure.formula }}</td><td class="small">{{ measure.source }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if missing %}
+<div class="card" id="missing">
+  <h2>Missing data · {{ missing|length }} transfer(s) left out of CO2e</h2>
+  <p class="small muted">Their category has no emission factor, so they count as items, AED and kg but not as CO2e (FR-13.8).</p>
+  <table class="table">
+    <thead><tr><th>Request</th><th>Asset</th><th>Category</th><th>kg</th><th>Reason</th></tr></thead>
+    <tbody>
+    {% for row in missing %}
+      <tr>
+        <td><a href="{% url 'request_detail' row.transfer.request.pk %}">{{ row.transfer.request.code }}</a></td>
+        <td>{{ row.transfer.asset.name }}</td>
+        <td>{{ row.transfer.asset.category }}</td>
+        <td>{{ row.kg|floatformat:1 }}</td>
+        <td>No emission factor for this category</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Transfers counted</h2>
+  <table class="table">
+    <thead><tr><th>Received</th><th>Request</th><th>Asset</th><th>From → to</th><th>Units</th><th>AED</th><th>kg</th><th>kg CO2e</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td class="nowrap">{{ row.transfer.received_at|date:"d/m/Y" }}</td>
+        <td><a href="{% url 'request_detail' row.transfer.request.pk %}">{{ row.transfer.request.code }}</a></td>
+        <td>{{ row.transfer.asset.name }}</td>
+        <td>{{ row.transfer.from_department }} → {{ row.transfer.to_department }}</td>
+        <td>{{ row.transfer.quantity }}</td>
+        <td>{{ row.cost|floatformat:0 }}</td>
+        <td>{{ row.kg|floatformat:1 }}</td>
+        <td>{% if row.co2e is None %}—{% else %}{{ row.co2e|floatformat:1 }}{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8" class="muted">No completed transfers in this period.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
