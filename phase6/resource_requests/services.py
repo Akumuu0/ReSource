@@ -31,7 +31,7 @@ def require_reason(reason):
 
 
 class RequestService:
-    """C4: submit requests, cancel, list."""
+    """C4: submit requests and needs, choose a match, cancel, list."""
 
     # --- checks ---------------------------------------------------------------
 
@@ -93,6 +93,29 @@ class RequestService:
         return request
 
     @staticmethod
+    @transaction.atomic
+    def submit_need(user, category, quantity, purpose, needed_by, specifications="", min_condition="",
+                    urgency=Request.MEDIUM, code=None):
+        """Describe a need without choosing an asset. It stays Open until a match is chosen."""
+        require_role(user, User.REPRESENTATIVE)
+        if quantity < 1:
+            raise BusinessRuleError("Quantity must be at least 1.")
+        RequestService.check_date(needed_by)
+        return Request.objects.create(
+            code=code or next_code(Request, "R"),
+            requester=user,
+            department=user.department,
+            category=category,
+            quantity=quantity,
+            purpose=purpose,
+            needed_by=needed_by,
+            specifications=specifications,
+            min_condition=min_condition,
+            urgency=urgency,
+            state=Request.OPEN,
+        )
+
+    @staticmethod
     def notify_new_request(request):
         NotificationService.notify(
             NotificationService.coordinators_of(request.asset.department),
@@ -100,6 +123,40 @@ class RequestService:
             f"New request {request.code}: {request.quantity} x {request.asset.name} for {request.department}.",
             link_to(request),
         )
+
+    # --- AI-2: the requester's decision on the matches ------------------------
+
+    @staticmethod
+    @transaction.atomic
+    def choose_match(user, request, asset, recommendation=None, reason=""):
+        """The requester accepts one match; the request then goes to that asset's coordinator.
+
+        Choosing anything other than the top recommendation needs a reason (FR-8.7).
+        """
+        RequestService.require_requester(user, request)
+        RequestService.require_state(request, Request.OPEN)
+        if recommendation and recommendation.request_id != request.pk:
+            raise BusinessRuleError("This recommendation was made for another request.")
+        if recommendation and recommendation.rank > 1:
+            if not (reason or "").strip():
+                raise BusinessRuleError("Choosing another asset than the top match needs a reason.")
+        RequestService.check_not_own(user, asset)
+        RequestService.check_units(asset, request.quantity)  # recheck: the list may be out of date
+        request.asset = asset
+        request.recommendation = recommendation
+        request.state = Request.SUBMITTED
+        request.save()
+        RequestService.notify_new_request(request)
+
+    @staticmethod
+    @transaction.atomic
+    def reject_matches(user, request, reason):
+        """The requester rejects all matches; the need is closed with the reason."""
+        RequestService.require_requester(user, request)
+        RequestService.require_state(request, Request.OPEN)
+        request.reason = f"No suitable match: {require_reason(reason)}"
+        request.state = Request.CANCELLED
+        request.save()
 
     # --- cancel ---------------------------------------------------------------
 

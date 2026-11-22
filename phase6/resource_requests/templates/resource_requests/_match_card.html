@@ -1,0 +1,22 @@
+<div class="card">
+  <div class="score-title"><span class="chip">{% if output.used_ai %}AI-ranked{% else %}Rule-based{% endif %}</span>
+    {{ rec.asset.name }} ({{ rec.asset.code }}) · score {{ rec.score }}</div>
+  <p class="small muted">{{ rec.asset.department }} · {{ rec.asset.department.campus }} · {{ rec.asset.condition }} · {{ rec.asset.available_quantity }} free</p>
+  <p><span class="conf {{ rec.confidence_level }}">{{ rec.confidence_level }} {{ rec.confidence|floatformat:2 }}</span>
+    {% if not rec.meets_quantity %}<span class="pill">Meets {{ rec.asset.available_quantity }} of {{ req.quantity }} units</span>{% endif %}</p>
+  <p class="small"><strong>Main limitation:</strong> {{ rec.limitation }}</p>
+  <p class="small">{{ rec.reason }}</p>
+  <details>
+    <summary>Score factors</summary>
+    <div class="bars">
+      {% for label, value, percent in rec.factor_rows %}
+        <div class="bar-row"><span>{{ label }}</span><span class="bar"><span style="width: {{ percent }}%"></span></span><b>{{ value|floatformat:2 }}</b></div>
+      {% endfor %}
+    </div>
+  </details>
+  <form method="post" action="{% url 'request_choose_match' req.pk rec.pk %}" class="reason-form">
+    {% csrf_token %}
+    <input name="reason" placeholder="Why this one? (required)" required>
+    <button class="button" {% if not rec.meets_quantity %}disabled title="Not enough free units"{% endif %}>Choose this</button>
+  </form>
+</div>

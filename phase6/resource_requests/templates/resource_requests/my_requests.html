@@ -3,6 +3,7 @@
 {% block content %}
 <div class="row-between">
   <h1>My requests</h1>
+  <a class="button primary" href="{% url 'need_create' %}">Describe a need</a>
 </div>
 {% include "resource_requests/_request_table.html" with rows=requests %}
 {% endblock %}

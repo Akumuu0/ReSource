@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Matches for {{ req.code }}{% endblock %}
+{% block content %}
+{# Design mockup 7.3: ranked matches with factor values, confidence and a plain-language reason. #}
+<h1>Matches for {{ req.code }} <span class="state">Open need</span></h1>
+<p class="subtitle">{{ req.department }} · {{ req.quantity }} × {{ req.category }}{% if req.specifications %} · {{ req.specifications }}{% endif %}
+  {% if req.min_condition %} · minimum {{ req.min_condition }}{% endif %} · {{ req.department.campus }} · by {{ req.needed_by|date:"d/m/Y" }} · urgency {{ req.urgency }}</p>
+
+{% if output and not output.used_ai %}<p class="fallback">{{ output.source }} ({{ output.note }})</p>{% endif %}
+{% if weak %}<div class="message warning">Weak matches: no candidate scores 60 or more, so there is no top pick.</div>{% endif %}
+
+{% if top %}
+<div class="ai-panel">
+  <h2><span class="chip">{% if output.used_ai %}AI-ranked{% else %}Rule-based{% endif %}</span> {{ top.asset.name }} ({{ top.asset.code }}) · score {{ top.score }}</h2>
+  <p class="small muted">{{ top.asset.department }} · {{ top.asset.department.campus }} · {{ top.asset.condition }} · {{ top.asset.available_quantity }} free unit(s) ·
+    <a href="{% url 'asset_detail' top.asset.pk %}">open the asset</a></p>
+  <div class="match-top">
+    <div>
+      <h3 class="small">Score factors (weights fixed in {{ rules_version }})</h3>
+      <div class="bars">
+        {% for label, value, percent in top.factor_rows %}
+          <div class="bar-row"><span>{{ label }}</span><span class="bar"><span style="width: {{ percent }}%"></span></span><b>{{ value|floatformat:2 }}</b></div>
+        {% endfor %}
+      </div>
+    </div>
+    <div>
+      <h3 class="small">In plain words</h3>
+      <p>{{ top.reason }}</p>
+      <p><span class="conf {{ top.confidence_level }}">{{ top.confidence_level }} confidence {{ top.confidence|floatformat:2 }}</span>
+        <span class="pill ok">Rules ✔ published · free units</span>
+        {% if not top.meets_quantity %}<span class="pill">Meets {{ top.asset.available_quantity }} of {{ req.quantity }} units</span>{% endif %}</p>
+      <p class="small"><strong>Strengths:</strong> {{ top.strengths }}<br><strong>Main limitation:</strong> {{ top.limitation }}</p>
+      <p class="small-print">Department name and size are not ranking factors.
+        {% if output.model_name %}Model: {{ output.model_name }} · {% endif %}{{ rules_version }} · {{ output.created_at|date:"d/m/Y H:i" }}</p>
+      {% if not weak %}
+      <form method="post" action="{% url 'request_choose_match' req.pk top.pk %}" class="button-row">
+        {% csrf_token %}
+        <button class="button primary" {% if not top.meets_quantity %}disabled title="Not enough free units"{% endif %}>Select</button>
+        <span class="small muted">Sends the request to release and approval; nothing is reserved yet.</span>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if others or weak %}
+<h2>{% if weak %}All candidates{% else %}Choose another{% endif %}</h2>
+<p class="small muted">Choosing an asset other than the top match asks for a reason (FR-8.7).</p>
+<div class="other-matches">
+  {% if weak and top %}{% include "resource_requests/_match_card.html" with rec=top %}{% endif %}
+  {% for rec in others %}{% include "resource_requests/_match_card.html" %}{% endfor %}
+</div>
+{% endif %}
+
+{% if not top %}<div class="card muted">No published assets are available for this need right now.</div>{% endif %}
+
+<div class="two-col">
+  <div class="card">
+    <h2>None suitable?</h2>
+    <form method="post" action="{% url 'request_reject_matches' req.pk %}" class="reason-form">
+      {% csrf_token %}
+      <input type="hidden" name="ai_output_id" value="{{ output.pk }}">
+      <input name="reason" placeholder="Why does none of them fit? (required)" required>
+      <button class="button danger">Reject all</button>
+    </form>
+    <p class="small muted">The need is closed with your reason.</p>
+  </div>
+  <div class="ai-down{% if output and not output.used_ai %} active{% endif %}">
+    <h3>When AI is unavailable</h3>
+    The scores still come from the fixed rules below, so the order does not change. Only the "in plain words"
+    sentences are then written from a template and labelled. You can still choose an asset or search the list yourself.
+  </div>
+</div>
+
+<div class="card small">
+  <h2>How the score works</h2>
+  <p>score = round(100 × (w1 F1 + w2 F2 + … + w8 F8)), each factor between 0 and 1 (design Table 17-1).
+    Confidence = 1 / (1 + e<sup>−(4.60 × score/100 − 2.57)</sup>): High from 0.80, Medium from 0.50 (Section 17.2).
+    High urgency doubles the weight of "Ready by the date" and Low urgency halves it; the weights are then rescaled to add up to 1.</p>
+  <table class="table">
+    <thead><tr><th>Factor</th><th>Weight</th><th>Value between 0 and 1</th></tr></thead>
+    <tbody>
+    {% for label, weight, formula in score_rows %}
+      <tr><td>{{ label }}</td><td>{{ weight }}</td><td>{{ formula }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

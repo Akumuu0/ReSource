@@ -36,6 +36,11 @@
         {{ transfer.from_department }} → {{ transfer.to_department }}</td></tr>{% endif %}
     </table>
 
+    {% if can_choose_match %}
+      <p>Look at the AI-ranked matches and choose one, or reject them all.</p>
+      <a class="button primary" href="{% url 'request_matches' req.pk %}">See matches</a>
+    {% endif %}
+
     {% if can_release %}
       <p>As the owning Asset Coordinator, release this request to an Administrator or decline it.</p>
       <form method="post" action="{% url 'request_release' req.pk %}" class="inline">{% csrf_token %}
@@ -86,11 +91,36 @@
   </div>
 
   <div>
+    <div class="ai-panel">
+      <h2>{% if recommendation %}<span class="chip">{% if recommendation.output.used_ai %}AI-ranked{% else %}Rule-based{% endif %}</span>{% endif %} How this asset was chosen</h2>
+      {% if recommendation %}
+        <p>Score <strong>{{ recommendation.score }}</strong> ·
+          <span class="conf {{ recommendation.confidence_level }}">{{ recommendation.confidence_level }} {{ recommendation.confidence|floatformat:2 }}</span> ·
+          ranked {{ recommendation.rank }} of {{ candidates }} ·
+          {% if recommendation.rank == 1 %}selected by the requester without change{% else %}chosen instead of match 1{% endif %}</p>
+        <p>{{ recommendation.reason }}</p>
+        {% if recommendation.rank > 1 %}<p class="small"><strong>Requester's reason:</strong> {{ recommendation.output.human_decision }}</p>{% endif %}
+        <p class="small"><strong>Main limitation:</strong> {{ recommendation.limitation }}</p>
+        <p class="small-print">Shown for information only; the AI does not approve.
+          {% if recommendation.output.model_name %}Model: {{ recommendation.output.model_name }} · {% endif %}rank rules v3.</p>
+      {% elif req.asset %}
+        <p>Requested directly from the asset list; no AI ranking was used.</p>
+      {% else %}
+        <p>No match chosen yet.</p>
+      {% endif %}
+    </div>
+
     <div class="card">
       <h2>History</h2>
       {% for when, text in history %}
         <p class="small"><span class="muted nowrap">{{ when|date:"d/m H:i" }}</span> · {{ text }}</p>
       {% endfor %}
+    </div>
+
+    <div class="ai-down">
+      <h3>When AI is unavailable</h3>
+      If the match details cannot be loaded, this panel says so and the decision uses the recorded facts on the left.
+      Release and approval never depend on AI.
     </div>
   </div>
 </div>

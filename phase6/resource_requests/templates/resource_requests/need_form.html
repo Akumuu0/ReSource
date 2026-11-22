@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}New request{% endblock %}
+{% block content %}
+{# Design mockup 7.2: describe the need; listings that may already meet it appear on the right. #}
+<h1>New resource request</h1>
+<p class="subtitle">For {{ user.department }} only. Submitting does not reserve anything; units are reserved only at final approval.</p>
+
+<div class="two-col">
+  <div class="card">
+    <h2>What you need</h2>
+    <form method="post">
+      {% csrf_token %}
+      {% include "_field.html" with field=form.category %}
+      {% include "_field.html" with field=form.purpose %}
+      <div class="field-row">
+        {% include "_field.html" with field=form.quantity %}
+        {% include "_field.html" with field=form.needed_by %}
+        {% include "_field.html" with field=form.urgency %}
+      </div>
+      <div class="field-row">
+        {% include "_field.html" with field=form.min_condition %}
+      </div>
+      {% include "_field.html" with field=form.specifications %}
+      <div class="button-row">
+        <button class="button" name="action" value="check">Check listings</button>
+        <button class="button primary" name="action" value="submit">Submit as open need</button>
+      </div>
+      <p class="small-print">"Check listings" ranks what is already published, without saving anything.
+        "Submit as open need" saves the need and shows its full list of matches.</p>
+    </form>
+  </div>
+
+  <div>
+    <div class="ai-panel">
+      <h2><span class="chip">{% if output and not output.used_ai %}Rule-based{% else %}AI-ranked{% endif %}</span> Listings that may already meet this need</h2>
+      {% if listings %}
+        {% if not output.used_ai %}<p class="fallback">{{ output.source }} ({{ output.note }})</p>{% endif %}
+        <table class="table">
+          <thead><tr><th>Asset</th><th>Fit</th><th>Why</th><th></th></tr></thead>
+          <tbody>
+          {% for rec in listings %}
+            <tr>
+              <td><strong>{{ rec.asset.name }}</strong><br>
+                <span class="small muted">{{ rec.asset.department }} · {{ rec.asset.department.campus }} · {{ rec.asset.condition }} · {{ rec.asset.available_quantity }} free</span></td>
+              <td>{{ rec.score }}<br><span class="conf {{ rec.confidence_level }}">{{ rec.confidence_level }}</span></td>
+              <td class="small">{{ rec.reason }}</td>
+              <td><a class="button small {% if forloop.first %}primary{% endif %}"
+                     href="{% url 'request_create' rec.asset.pk %}?quantity={{ form.cleaned_data.quantity }}&amp;purpose={{ form.cleaned_data.purpose|urlencode }}&amp;needed_by={{ form.cleaned_data.needed_by|date:'Y-m-d' }}">Request this</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <p class="small-print">Read-only suggestions. Requesting a listing still needs release and approval.</p>
+      {% elif checked %}
+        <p>No published asset fits this need yet. Submit it as an open need; it stays open until a match is chosen.</p>
+      {% else %}
+        <p>Fill in the need and press <strong>Check listings</strong>. ReSource scores every published asset with
+          eight fixed factors and shows the best ones, each with a fit score from 0 to 100, a confidence level and the reason.</p>
+      {% endif %}
+    </div>
+    <div class="ai-down{% if output and not output.used_ai %} active{% endif %}">
+      <h3>When AI is unavailable</h3>
+      The fit scores still come from the fixed rules; the reasons are then written from a template and labelled
+      <em>AI unavailable, rule-based result</em>. The form and the submission work as usual.
+    </div>
+  </div>
+</div>
+{% endblock %}

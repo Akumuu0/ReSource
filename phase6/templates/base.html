@@ -34,6 +34,7 @@
       <a href="{% url 'asset_create' %}" class="{% if page == 'asset_create' or page == 'asset_edit' %}active{% endif %}">Register asset</a>
     {% endif %}
     {% if user.is_representative %}
+      <a href="{% url 'need_create' %}" class="{% if page == 'need_create' %}active{% endif %}">New request</a>
       <a href="{% url 'my_requests' %}" class="{% if page == 'my_requests' or page == 'request_create' %}active{% endif %}">My requests</a>
       <a href="{% url 'tasks' %}" class="{% if page == 'tasks' or page == 'request_matches' %}active{% endif %}">Matches and tasks</a>
     {% else %}
