@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "accounts",
     "assets",
     "resource_requests",
+    "sustainability",
     "ai",
 ]
 
