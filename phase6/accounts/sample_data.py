@@ -1,10 +1,12 @@
 """A small set of departments, users and one asset, shared by the automated tests."""
+from datetime import date
 from decimal import Decimal
 from types import SimpleNamespace
 
 from accounts.models import Department, User
 from assets.models import Category
 from assets.services import AssetService
+from sustainability.models import CategoryValue
 
 
 def make_user(username, role, department):
@@ -27,6 +29,8 @@ def build_sample_world(units=2):
     w.admin = make_user("admin", User.ADMINISTRATOR, w.facilities)
 
     w.lab = Category.objects.create(name="Lab Equipment", keywords="oscilloscope,multimeter,lab")
+    CategoryValue.objects.create(category=w.lab, value_type=CategoryValue.EMISSION_FACTOR, value=Decimal("22.92"),
+                                 unit="kg CO2e per kg", source="EPA WARM v16", effective_date=date(2026, 1, 1))
     w.scope = AssetService.register(w.eng_coord, {
         "name": "Digital oscilloscope",
         "description": "100 MHz two-channel digital oscilloscope",
