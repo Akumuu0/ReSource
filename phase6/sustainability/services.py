@@ -1,0 +1,114 @@
+"""Sustainability measures (C7).
+
+All numbers come from fixed formulas over the database, never from AI
+(design Section 18, FR-13.2), so the same data always gives the same numbers.
+"""
+from datetime import date
+from decimal import Decimal
+
+from django.db.models import Sum
+
+from resource_requests.models import Transfer
+
+from .models import CategoryValue
+
+# What the dashboard shows for each measure: its formula and its source.
+MEASURES = [
+    {
+        "key": "items_reused",
+        "label": "Items reused",
+        "unit": "items",
+        "formula": "items reused = sum of units in every transfer with confirmed receipt",
+        "source": "ReSource transfer records (Phase 3 indicator 1). Only completed transfers count.",
+    },
+    {
+        "key": "cost_avoided",
+        "label": "Cost avoided",
+        "unit": "AED",
+        "formula": "cost avoided = sum of (units x replacement value per unit)",
+        "source": "Replacement value recorded on each asset by its Asset Coordinator (Phase 3 indicator 3, avoided purchases).",
+    },
+    {
+        "key": "waste_kg",
+        "label": "Waste diverted",
+        "unit": "kg",
+        "formula": "waste diverted = sum of (units x weight per unit in kg)",
+        "source": "Weight recorded on each asset (Phase 3 indicator 5).",
+    },
+    {
+        "key": "co2e_kg",
+        "label": "CO2e avoided",
+        "unit": "kg CO2e",
+        "formula": "kg CO2e avoided = sum of (kg diverted x the category's emission factor); "
+                   "categories without a factor are left out and listed under Missing data (FR-13.8)",
+        "source": "EPA WARM version 16 source-reduction factor for mixed electronics, 22.92 kg CO2e per kg "
+                  "(design Section 18.2, reference [15]), stored as a CategoryValue for the electronic categories only.",
+    },
+]
+
+
+class SustainabilityCalculator:
+    """Calculates the four measures for an optional period and receiving department."""
+
+    def __init__(self, start=None, end=None, department=None):
+        self.start = start
+        self.end = end
+        self.department = department
+
+    def reused_transfers(self):
+        """Transfers whose receipt was confirmed: only these count as reuse (FR-13.3)."""
+        transfers = Transfer.objects.filter(state=Transfer.RECEIVED).select_related(
+            "asset__category", "request", "to_department", "from_department")
+        if self.start:
+            transfers = transfers.filter(received_at__date__gte=self.start)
+        if self.end:
+            transfers = transfers.filter(received_at__date__lte=self.end)
+        if self.department:
+            transfers = transfers.filter(to_department=self.department)
+        return transfers.order_by("received_at")
+
+    def calculate(self):
+        totals = {"items_reused": 0, "cost_avoided": Decimal("0"), "waste_kg": Decimal("0"), "co2e_kg": Decimal("0")}
+        rows = []
+        for transfer in self.reused_transfers():
+            asset = transfer.asset
+            cost = transfer.quantity * asset.estimated_value
+            kg = transfer.quantity * asset.weight_kg
+            factor = CategoryValue.emission_factor(asset.category)
+            co2e = kg * factor if factor is not None else None  # no factor: left out of CO2e (FR-13.8)
+            totals["items_reused"] += transfer.quantity
+            totals["cost_avoided"] += cost
+            totals["waste_kg"] += kg
+            if co2e is not None:
+                totals["co2e_kg"] += co2e
+            rows.append({"transfer": transfer, "cost": cost, "kg": kg, "co2e": co2e})
+        totals["co2e_kg"] = totals["co2e_kg"].quantize(Decimal("0.01"))
+        return totals, rows
+
+    def monthly_items(self, months=6):
+        """Items reused in each of the last 6 months, oldest first, for the trend bars (design 7.6)."""
+        today = date.today()
+        result = []
+        for back in range(months - 1, -1, -1):
+            year, month = today.year, today.month - back
+            if month < 1:
+                year, month = year - 1, month + 12
+            transfers = Transfer.objects.filter(state=Transfer.RECEIVED, received_at__year=year, received_at__month=month)
+            if self.department:
+                transfers = transfers.filter(to_department=self.department)
+            items = transfers.aggregate(total=Sum("quantity"))["total"] or 0
+            result.append({"label": date(year, month, 1).strftime("%b %Y"), "items": items})
+        largest = max(row["items"] for row in result) or 1
+        for row in result:
+            row["percent"] = round(100 * row["items"] / largest)
+        return result
+
+    @staticmethod
+    def display(totals):
+        """The numbers as people read them. The AI summary must use exactly these."""
+        return {
+            "items_reused": f"{totals['items_reused']}",
+            "cost_avoided": f"{totals['cost_avoided']:,.0f}",
+            "waste_kg": f"{totals['waste_kg']:,.1f}",
+            "co2e_kg": f"{totals['co2e_kg']:,.1f}",
+        }
