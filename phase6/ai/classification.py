@@ -31,6 +31,12 @@ SYSTEM_PROMPT = (
 
 
 class ClassificationService:
+    """AI-1: suggests category, condition and tags for a new asset from its name and description.
+
+    suggest() asks the AI through AIGateway; rule_based() is the fallback used when the AI is not
+    available. The Register Asset page then shows one row per field so the coordinator can accept,
+    edit or reject each suggestion before saving.
+    """
 
     def suggest(self, user, name, description):
         """Return an AIResult whose data has category, condition, tags, confidence and reason."""
@@ -143,6 +149,7 @@ class ClassificationService:
         data = json.loads(output.output_text)
 
         def tag_set(text):
+            """Tags compared without case, spaces or order: "Lab, Monitor" equals "monitor,lab"."""
             return {tag.strip().lower() for tag in text.split(",") if tag.strip()}
 
         same = {
