@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{# Django shows this page after a server error, without the signed-in user, so the header shows no menu. #}
+{% block title %}Something went wrong{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Something went wrong</h1>
+  <p>ReSource could not finish this action.</p>
+  <p class="muted">Please try again in a moment. If it keeps happening, tell the Administrator what you were doing.</p>
+  <a class="button" href="{% url 'home' %}">Back to home</a>
+</div>
+{% endblock %}
