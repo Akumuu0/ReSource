@@ -35,6 +35,27 @@
     <div class="trend-labels">{% for month in trend %}<span>{{ month.label }}</span>{% endfor %}</div>
     <p class="small-print">Counts the units of every transfer whose receipt was confirmed in that month{% if form.cleaned_data.department %}, received by {{ form.cleaned_data.department }}{% endif %}.</p>
   </div>
+
+  <div>
+    <div class="ai-panel">
+      <h2><span class="chip">AI-generated</span> Summary</h2>
+      {% if latest_summary %}
+        <p>{{ latest_summary.final_text|truncatewords:45 }}</p>
+        <p class="small-print">Published {{ latest_summary.published_at|date:"d/m/Y" }} by {{ latest_summary.published_by.display_name }}
+          for {{ latest_summary.period_start|date:"d/m/Y" }} – {{ latest_summary.period_end|date:"d/m/Y" }}.
+          Every number was checked against these figures (FR-12.4).</p>
+        <a class="button small" href="{% url 'summary_detail' latest_summary.pk %}">Open the summary</a>
+      {% else %}
+        <p>No summary has been published yet.</p>
+      {% endif %}
+      {% if user.is_administrator %}<a class="button small primary" href="{% url 'summary_list' %}">Generate a draft</a>{% endif %}
+      <p class="small-print">Drafts stay with the Administrator until they are published (FR-12.9).</p>
+    </div>
+    <div class="ai-down">
+      <h3>When AI is unavailable</h3>
+      The figures, the trend and the formulas are unaffected; only the summary text is then written from a template.
+    </div>
+  </div>
 </div>
 
 <div class="card">
