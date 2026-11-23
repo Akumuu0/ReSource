@@ -31,6 +31,12 @@ SYSTEM_PROMPT = (
 
 
 class ReportGenerator:
+    """AI-5: turns the period's calculated sustainability figures into a short draft summary.
+
+    The numbers always come from SustainabilityCalculator, never from the AI. The AI only writes the
+    sentences around them, and check_numbers() rejects any summary that contains a number we did not
+    calculate. The result is a draft: an Administrator must edit and publish it before anyone sees it.
+    """
 
     def generate(self, user, start, end):
         """Create a draft AIReport for the period, with its frozen figures."""
