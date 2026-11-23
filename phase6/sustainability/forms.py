@@ -20,3 +20,16 @@ class ReportFilterForm(PeriodForm):
     """Filters of the request report (C9)."""
 
     state = forms.ChoiceField(choices=[("", "Any state")] + Request.STATE_CHOICES, required=False)
+
+
+class SummaryForm(forms.Form):
+    """Period for a generated summary (AI-5)."""
+
+    period_start = forms.DateField(widget=DATE_INPUT, label="From")
+    period_end = forms.DateField(widget=DATE_INPUT, label="To")
+
+    def clean(self):
+        data = super().clean()
+        if data.get("period_start") and data.get("period_end") and data["period_start"] > data["period_end"]:
+            raise forms.ValidationError("The start date must be before the end date.")
+        return data
