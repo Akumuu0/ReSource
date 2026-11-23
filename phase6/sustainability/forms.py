@@ -29,6 +29,7 @@ class SummaryForm(forms.Form):
     period_end = forms.DateField(widget=DATE_INPUT, label="To")
 
     def clean(self):
+        """Reject a period whose start date is after its end date."""
         data = super().clean()
         if data.get("period_start") and data.get("period_end") and data["period_start"] > data["period_end"]:
             raise forms.ValidationError("The start date must be before the end date.")
