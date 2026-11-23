@@ -37,12 +37,6 @@
           <span class="muted small">Publish it from its page when it is ready.</span>
         </div>
       </div>
-      <div class="ai-down{% if suggestion_output and not suggestion_output.used_ai %} active{% endif %}">
-        <h3>When AI is unavailable</h3>
-        If the AI cannot answer within 20 seconds, ReSource suggests values from category keywords instead and labels
-        them <em>AI unavailable, rule-based result</em>. Everything you typed is kept; you can always choose the
-        category from the list yourself.
-      </div>
     </div>
 
     <div class="ai-panel">
@@ -73,7 +67,7 @@
         {% if suggestion.reason %}<p><strong>Why:</strong> {{ suggestion.reason }}</p>{% endif %}
         {% if suggestion_output.confidence_level == "Low" %}<p class="note">Low confidence: check every field yourself.</p>{% endif %}
         <p class="small-print">Nothing is saved until you press "Save draft"; your decision on each field is then recorded.
-          {% if suggestion_output.model_name %}Model: {{ suggestion_output.model_name }} · {% endif %}{{ suggestion_output.created_at|date:"d/m/Y H:i" }}</p>
+          {{ suggestion_output.created_at|date:"d/m/Y H:i" }}</p>
       {% else %}
         <p>Type a name and a description, then press <strong>Suggest with AI</strong>. The AI suggests the category,
           the condition and tags, each with its own confidence. You accept, edit or reject each one.</p>
