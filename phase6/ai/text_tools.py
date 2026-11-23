@@ -10,7 +10,11 @@ STOPWORDS = {
 
 
 def words(text):
-    """Lower-case content words of a text, with a simple plural rule (chairs -> chair)."""
+    """Lower-case content words of a text, with a simple plural rule (chairs -> chair).
+
+    Short words and common words (STOPWORDS) are dropped, so only words that describe the item remain:
+        words("Two working oscilloscopes for the physics lab") == {"oscilloscope", "physic"}
+    """
     result = set()
     for word in re.findall(r"[a-z0-9]+", text.lower()):
         if len(word) > 3 and word.endswith("s"):
@@ -21,5 +25,9 @@ def words(text):
 
 
 def contains_phrase(text, phrase):
-    """True if the phrase starts at a word boundary in the text ("monitor" matches "monitors")."""
+    """True if the phrase starts at a word boundary in the text ("monitor" matches "monitors").
+
+        contains_phrase("Dell monitors, 24-inch", "monitor") is True
+        contains_phrase("Dell monitors", "onitor") is False   (not at the start of a word)
+    """
     return re.search(rf"\b{re.escape(phrase)}", text.lower()) is not None
