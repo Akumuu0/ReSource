@@ -41,6 +41,7 @@
       <a href="{% url 'tasks' %}" class="{% if page == 'tasks' or page == 'request_detail' %}active{% endif %}">{% if user.is_administrator %}Approvals{% else %}Releases and transfers{% endif %}</a>
     {% endif %}
     <a href="{% url 'dashboard' %}" class="{% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="{% url 'report_table' %}" class="{% if page == 'report_table' %}active{% endif %}">Reports</a>
     <a href="{% url 'notifications' %}" class="{% if page == 'notifications' %}active{% endif %}">Notifications</a>
     {% if user.is_administrator %}<a href="{% url 'admin:index' %}">Admin site</a>{% endif %}
   </nav>
