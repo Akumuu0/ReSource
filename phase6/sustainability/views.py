@@ -65,6 +65,7 @@ def report_table(request):
 
 @login_required
 def summary_list(request):
+    """Administrators see every summary (drafts included); other users only see published ones."""
     if request.user.is_administrator:
         reports = AIReport.objects.all()
     else:
@@ -77,6 +78,7 @@ def summary_list(request):
 @require_POST
 @role_required(User.ADMINISTRATOR)
 def summary_create(request):
+    """Generate a new draft summary for the chosen period, then open it for review."""
     form = SummaryForm(request.POST)
     if not form.is_valid():
         messages.error(request, "Please choose a valid period.")
