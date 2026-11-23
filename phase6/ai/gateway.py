@@ -34,10 +34,17 @@ class AIResult:
 
     @property
     def used_ai(self):
+        """True if the answer came from the language model, False if the rule-based fallback was used."""
         return self.output.used_ai
 
 
 class AIGateway:
+    """The single entry point for every AI feature (AI-1 classification, AI-2 matching, AI-5 summary).
+
+    Services never call Gemini directly: they call run() with a prompt, a JSON schema and a fallback.
+    Keeping the provider behind one class means the privacy filter, the time limit and the audit record
+    (AIOutput) apply to every AI call the same way, and the provider can be changed in one place.
+    """
 
     def run(self, feature, system, prompt, schema, fallback, user, validate=None, confidence=None):
         """Ask the AI for JSON that follows `schema`. If that fails in any way, use `fallback()`.
