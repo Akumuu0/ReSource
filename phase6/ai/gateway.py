@@ -52,21 +52,26 @@ class AIGateway:
         validate(data) returns "" when the answer is fine, or a short problem description.
         confidence, if given, is stored instead of the one in the answer.
         """
+        # 1. Privacy: names, e-mails, record codes and ID numbers never leave the server (SEC-11).
         clean_prompt = self.strip_personal_data(prompt)
 
+        # 2. Call the model and measure how long it took (stored as latency_ms).
         started = time.monotonic()
         data, note = self.call_model(system, clean_prompt, schema)
         latency_ms = int((time.monotonic() - started) * 1000)
 
+        # 3. Check the answer: e.g. a category that is not on the approved list is rejected.
         if data is not None and validate:
             problem = validate(data)
             if problem:
                 data, note = None, f"AI answer rejected: {problem}"
 
+        # 4. Fallback: any failure (no key, time limit, bad answer) switches to the rule-based result (AI-6).
         source = AIOutput.AI_SOURCE
         if data is None:
             data, source = fallback(), AIOutput.FALLBACK_SOURCE
 
+        # 5. Audit: every call is saved, so a person can later accept or reject it (human gate).
         output = AIOutput.objects.create(
             feature=feature,
             input_text=clean_prompt,
