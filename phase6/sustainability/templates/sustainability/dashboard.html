@@ -3,7 +3,7 @@
 {% block content %}
 {# Design mockup 7.6: the figures first, the trend and the AI summary below, every formula shown. #}
 <h1>Sustainability dashboard{% if form.cleaned_data.department %} · {{ form.cleaned_data.department }}{% else %} · whole campus{% endif %}</h1>
-<p class="subtitle">Fixed formulas, not AI (FR-13.2). Estimates for internal planning, not certified carbon or financial accounts.</p>
+<p class="subtitle">Fixed formulas, not AI. Estimates for internal planning, not certified carbon or financial accounts.</p>
 
 <form method="get" class="filters">
   {{ form.date_from.label_tag }} {{ form.date_from }}
@@ -43,17 +43,13 @@
         <p>{{ latest_summary.final_text|truncatewords:45 }}</p>
         <p class="small-print">Published {{ latest_summary.published_at|date:"d/m/Y" }} by {{ latest_summary.published_by.display_name }}
           for {{ latest_summary.period_start|date:"d/m/Y" }} – {{ latest_summary.period_end|date:"d/m/Y" }}.
-          Every number was checked against these figures (FR-12.4).</p>
+          Every number was checked against these figures.</p>
         <a class="button small" href="{% url 'summary_detail' latest_summary.pk %}">Open the summary</a>
       {% else %}
         <p>No summary has been published yet.</p>
       {% endif %}
       {% if user.is_administrator %}<a class="button small primary" href="{% url 'summary_list' %}">Generate a draft</a>{% endif %}
-      <p class="small-print">Drafts stay with the Administrator until they are published (FR-12.9).</p>
-    </div>
-    <div class="ai-down">
-      <h3>When AI is unavailable</h3>
-      The figures, the trend and the formulas are unaffected; only the summary text is then written from a template.
+      <p class="small-print">Drafts stay with the Administrator until they are published.</p>
     </div>
   </div>
 </div>
@@ -73,7 +69,7 @@
 {% if missing %}
 <div class="card" id="missing">
   <h2>Missing data · {{ missing|length }} transfer(s) left out of CO2e</h2>
-  <p class="small muted">Their category has no emission factor, so they count as items, AED and kg but not as CO2e (FR-13.8).</p>
+  <p class="small muted">Their category has no emission factor, so they count as items, AED and kg but not as CO2e.</p>
   <table class="table">
     <thead><tr><th>Request</th><th>Asset</th><th>Category</th><th>kg</th><th>Reason</th></tr></thead>
     <tbody>

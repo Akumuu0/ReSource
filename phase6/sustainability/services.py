@@ -26,30 +26,30 @@ MEASURES = [
         "label": "Items reused",
         "unit": "items",
         "formula": "items reused = sum of units in every transfer with confirmed receipt",
-        "source": "ReSource transfer records (Phase 3 indicator 1). Only completed transfers count.",
+        "source": "ReSource transfer records. Only completed transfers count.",
     },
     {
         "key": "cost_avoided",
         "label": "Cost avoided",
         "unit": "AED",
         "formula": "cost avoided = sum of (units x replacement value per unit)",
-        "source": "Replacement value recorded on each asset by its Asset Coordinator (Phase 3 indicator 3, avoided purchases).",
+        "source": "Replacement value recorded on each asset by its Asset Coordinator (avoided purchases).",
     },
     {
         "key": "waste_kg",
         "label": "Waste diverted",
         "unit": "kg",
         "formula": "waste diverted = sum of (units x weight per unit in kg)",
-        "source": "Weight recorded on each asset (Phase 3 indicator 5).",
+        "source": "Weight recorded on each asset.",
     },
     {
         "key": "co2e_kg",
         "label": "CO2e avoided",
         "unit": "kg CO2e",
         "formula": "kg CO2e avoided = sum of (kg diverted x the category's emission factor); "
-                   "categories without a factor are left out and listed under Missing data (FR-13.8)",
-        "source": "EPA WARM version 16 source-reduction factor for mixed electronics, 22.92 kg CO2e per kg "
-                  "(design Section 18.2, reference [15]), stored as a CategoryValue for the electronic categories only.",
+                   "categories without a factor are left out and listed under Missing data",
+        "source": "EPA WARM version 16 source-reduction factor for mixed electronics, 22.92 kg CO2e per kg, "
+                  "saved for the electronic categories only.",
     },
 ]
 
