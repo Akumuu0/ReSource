@@ -86,6 +86,11 @@ def cost_factor(cost, limit):
 
 
 class RankingModel:
+    """AI-2: finds and ranks available assets of other departments for a department's need.
+
+    The ranking itself is rule-based and repeatable (weights and formulas above), so the same need
+    always gives the same order. The language model is only used for the short explanation sentences.
+    """
 
     @staticmethod
     def weights_for(req):
@@ -97,6 +102,7 @@ class RankingModel:
 
     @staticmethod
     def asset_words(asset):
+        """The content words of an asset (name, description, tags and category), used for matching."""
         return words(f"{asset.name} {asset.description} {asset.tags} {asset.category.name}")
 
     @staticmethod
@@ -111,6 +117,7 @@ class RankingModel:
 
     @staticmethod
     def distance(req, asset):
+        """"same campus" or "other campus": decides the F4 location score and the moving cost."""
         return "same campus" if asset.department.campus == req.department.campus else "other campus"
 
     @staticmethod
