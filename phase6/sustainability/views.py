@@ -90,6 +90,7 @@ def summary_create(request):
 
 @login_required
 def summary_detail(request, pk):
+    """Show one summary. For a draft, the Administrator can edit and publish it, or discard it."""
     report = get_object_or_404(AIReport, pk=pk)
     if report.state != AIReport.PUBLISHED and not request.user.is_administrator:
         raise PermissionDenied("Only published summaries can be read by everyone.")
@@ -104,6 +105,7 @@ def summary_detail(request, pk):
         except BusinessRuleError as error:
             messages.error(request, str(error))
         return redirect("summary_detail", pk=pk)
+    # Split the draft into text and numbers, so each number can show a check mark if it is a calculated figure.
     pieces = ReportGenerator.mark_numbers(report.draft_text, report)
     numbers = [piece for piece in pieces if piece["number"]]
     context = {
