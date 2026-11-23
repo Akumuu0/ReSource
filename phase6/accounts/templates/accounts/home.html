@@ -3,4 +3,33 @@
 {% block content %}
 <h1>Welcome, {{ user.display_name }}</h1>
 <p class="muted">You are signed in as <strong>{{ user.get_role_display }}</strong> of <strong>{{ user.department }}</strong>.</p>
+
+<div class="grid">
+  {% for title, count in task_counts %}
+    <a class="card stat" href="{% url 'tasks' %}">
+      <span class="big">{{ count }}</span>
+      <span>{{ title }}</span>
+    </a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>What you can do</h2>
+  <ul>
+    {% if user.is_representative %}
+      <li><a href="{% url 'asset_list' %}">Search published assets</a> and request one.</li>
+      <li><a href="{% url 'need_create' %}">Describe a need</a> and let the AI suggest the 5 best matches.</li>
+      <li>Follow <a href="{% url 'my_requests' %}">your requests</a> and confirm receipt when items arrive.</li>
+    {% elif user.is_coordinator %}
+      <li><a href="{% url 'asset_create' %}">Register an asset</a> (with an AI category suggestion) and publish it.</li>
+      <li>Release or decline requests for your department's assets, then hand them over.</li>
+      <li>See <a href="{% url 'my_assets' %}">all assets of {{ user.department }}</a>.</li>
+    {% else %}
+      <li>Approve or reject released requests in <a href="{% url 'tasks' %}">My tasks</a>.</li>
+      <li>Generate, edit and publish an <a href="{% url 'summary_list' %}">AI summary</a> of the sustainability figures.</li>
+      <li>Manage users and roles in the <a href="{% url 'admin:index' %}">admin site</a>.</li>
+    {% endif %}
+    <li>See the <a href="{% url 'dashboard' %}">sustainability dashboard</a> and the <a href="{% url 'report_table' %}">request report</a>.</li>
+  </ul>
+</div>
 {% endblock %}
