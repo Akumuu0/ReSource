@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}AI summaries{% endblock %}
+{% block content %}
+<h1>AI summaries</h1>
+<p class="muted">The database calculates the figures; the AI only writes the text around them. Every number in the AI text is
+  checked against the calculated figures. An Administrator edits each draft before it is published.</p>
+
+{% if user.is_administrator %}
+<div class="card">
+  <h2>Generate a new summary</h2>
+  <form method="post" action="{% url 'summary_create' %}" class="filters">
+    {% csrf_token %}
+    {{ form.period_start.label_tag }} {{ form.period_start }}
+    {{ form.period_end.label_tag }} {{ form.period_end }}
+    <button class="button primary">Generate draft</button>
+  </form>
+</div>
+{% endif %}
+
+<table class="table">
+  <thead><tr><th>Period</th><th>State</th><th>Written by</th><th>Created</th><th></th></tr></thead>
+  <tbody>
+  {% for report in reports %}
+    <tr>
+      <td class="nowrap">{{ report.period_start|date:"d/m/Y" }} – {{ report.period_end|date:"d/m/Y" }}</td>
+      <td><span class="state">{{ report.state }}</span></td>
+      <td>{% if report.ai_output.used_ai %}AI{% else %}Rule-based template{% endif %}</td>
+      <td class="nowrap">{{ report.created_at|date:"d/m/Y H:i" }}</td>
+      <td><a href="{% url 'summary_detail' report.pk %}">Open</a></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="5" class="muted">No summaries yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
