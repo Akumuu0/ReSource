@@ -237,6 +237,8 @@ def matching_output(request):
 @require_POST
 @login_required
 def choose_match(request, pk, rec_pk):
+    """The requester picks one of the ranked matches. Choosing any match other than the top one needs a reason,
+    and the choice is recorded on the AI output (human gate H-2)."""
     req = get_object_or_404(Request, pk=pk)
     # Only a recommendation that was shown to this user.
     rec = get_object_or_404(Recommendation.objects.select_related("asset", "output"),
@@ -260,6 +262,7 @@ def choose_match(request, pk, rec_pk):
 @require_POST
 @login_required
 def reject_matches(request, pk):
+    """The requester rejects every match with a reason; the request is closed and the decision recorded."""
     req = get_object_or_404(Request, pk=pk)
     reason = request.POST.get("reason", "")
     try:
