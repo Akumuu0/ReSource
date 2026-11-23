@@ -19,8 +19,6 @@ from .gateway import AIGateway
 from .models import FACTOR_LABELS, AIOutput, Recommendation
 from .text_tools import words
 
-RULES_VERSION = "rank rules v3"
-
 # Rule set v3 (design Table 17-1). The weights add up to 1.0.
 WEIGHTS = {
     "function": 0.35,   # F1 function and specifications
