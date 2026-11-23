@@ -133,6 +133,7 @@ class RankingModel:
 
     @staticmethod
     def below_minimum(req, asset):
+        """True if the requester asked for a minimum condition and the asset is worse (e.g. Fair < Good)."""
         return bool(req.min_condition) and (
             CONDITION_ORDER.index(asset.condition) < CONDITION_ORDER.index(req.min_condition))
 
@@ -170,6 +171,11 @@ class RankingModel:
 
     @staticmethod
     def score(factors, weights=WEIGHTS):
+        """The 0-100 score: 100 x the weighted sum of the eight factors.
+
+        Example with the default weights: if every factor is 1.0 except carbon (0.0), the score is
+        round(100 x (1.0 - 0.05)) = 95.
+        """
         return round(100 * sum(weights[name] * factors[name] for name in weights))
 
     @staticmethod
