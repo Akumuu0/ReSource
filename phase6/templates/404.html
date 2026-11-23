@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>Page not found</h1>
+  <p>This page does not exist, or the record was removed.</p>
+  <p class="muted">Check the address, or start again from the home page.</p>
+  <a class="button" href="{% url 'home' %}">Back to home</a>
+</div>
+{% endblock %}
