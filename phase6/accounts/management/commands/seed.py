@@ -105,7 +105,7 @@ class Command(BaseCommand):
                     CategoryValue.objects.create(
                         category=category, value_type=CategoryValue.EMISSION_FACTOR, value=Decimal("22.92"),
                         unit="kg CO2e per kg", effective_date=date(2026, 1, 1), version=1,
-                        source="EPA WARM v16 source-reduction factor, mixed electronics (design Section 18.2)",
+                        source="EPA WARM v16 source-reduction factor, mixed electronics",
                     )
                 self.categories[name] = category
             self.create_assets()
