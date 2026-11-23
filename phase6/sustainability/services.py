@@ -190,6 +190,11 @@ class SummaryService:
     @staticmethod
     @transaction.atomic
     def publish(user, report, final_text):
+        """Publish a draft with the Administrator's final text, and record whether it was edited.
+
+        Only drafts can be published, and the text cannot be empty. After this the summary is visible
+        to every user on the Summaries page.
+        """
         require_role(user, User.ADMINISTRATOR)
         if report.state != AIReport.DRAFT:
             raise BusinessRuleError(f"This summary is already {report.state}.")
@@ -207,6 +212,7 @@ class SummaryService:
     @staticmethod
     @transaction.atomic
     def discard(user, report):
+        """Throw away a draft the Administrator does not want to publish; the decision is still recorded."""
         require_role(user, User.ADMINISTRATOR)
         if report.state != AIReport.DRAFT:
             raise BusinessRuleError(f"This summary is already {report.state}.")
