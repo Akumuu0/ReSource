@@ -1,14 +1,16 @@
-"""Sustainability measures (C7).
+"""Sustainability measures (C7) and the request report (C9).
 
 All numbers come from fixed formulas over the database, never from AI
 (design Section 18, FR-13.2), so the same data always gives the same numbers.
 """
+import csv
+import io
 from datetime import date
 from decimal import Decimal
 
-from django.db.models import Sum
+from django.db.models import Q, Sum
 
-from resource_requests.models import Transfer
+from resource_requests.models import Approval, Request, Transfer
 
 from .models import CategoryValue
 
@@ -112,3 +114,66 @@ class SustainabilityCalculator:
             "waste_kg": f"{totals['waste_kg']:,.1f}",
             "co2e_kg": f"{totals['co2e_kg']:,.1f}",
         }
+
+
+class RequestReportService:
+    """C9: a table of requests and their transfers, with filters and CSV export."""
+
+    COLUMNS = ["Code", "Submitted", "Requesting department", "Requested by", "Asset", "Owner department",
+               "Quantity", "State", "Release decision", "Approval decision", "Transfer state", "Received", "Reason"]
+
+    @staticmethod
+    def requests_for(user, state="", department=None, date_from=None, date_to=None):
+        """Administrators see everything; other users see requests of their own department."""
+        requests = Request.objects.select_related(
+            "requester", "department", "asset__department", "transfer__from_department"
+        ).prefetch_related("approvals__decided_by")
+        if not user.is_administrator:
+            mine = user.department
+            requests = requests.filter(Q(department=mine) | Q(asset__department=mine) | Q(transfer__from_department=mine))
+        if state:
+            requests = requests.filter(state=state)
+        if department:
+            requests = requests.filter(Q(department=department) | Q(asset__department=department)
+                                       | Q(transfer__from_department=department))
+        if date_from:
+            requests = requests.filter(created_at__date__gte=date_from)
+        if date_to:
+            requests = requests.filter(created_at__date__lte=date_to)
+        return requests.distinct().order_by("-created_at")
+
+    @staticmethod
+    def decision(req, step):
+        """e.g. "Approved by admin" for the given step, or "" if not decided yet."""
+        for approval in req.approvals.all():
+            if approval.step == step:
+                return f"{approval.decision} by {approval.decided_by.username}"
+        return ""
+
+    @staticmethod
+    def as_row(req):
+        transfer = req.get_transfer()
+        return [
+            req.code,
+            req.created_at.strftime("%d/%m/%Y"),
+            req.department.name,
+            req.requester.username,
+            f"{req.asset.code} {req.asset.name}" if req.asset else "(open need)",
+            req.owner_department.name if req.owner_department else "",
+            req.quantity,
+            req.state,
+            RequestReportService.decision(req, Approval.RELEASE),
+            RequestReportService.decision(req, Approval.APPROVAL),
+            transfer.state if transfer else "",
+            transfer.received_at.strftime("%d/%m/%Y") if transfer and transfer.received_at else "",
+            req.reason,
+        ]
+
+    @staticmethod
+    def to_csv(requests):
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        writer.writerow(RequestReportService.COLUMNS)
+        for req in requests:
+            writer.writerow(RequestReportService.as_row(req))
+        return buffer.getvalue()

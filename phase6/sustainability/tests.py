@@ -1,4 +1,4 @@
-"""Tests for the dashboard formulas (C7) and notifications (C8)."""
+"""Tests for the dashboard formulas (C7), notifications (C8) and the report with CSV (C9)."""
 from datetime import date, timedelta
 from decimal import Decimal
 
@@ -11,7 +11,7 @@ from assets.services import AssetService
 from resource_requests.services import ApprovalService, RequestService, TransferService
 
 from .models import CategoryValue
-from .services import SustainabilityCalculator
+from .services import RequestReportService, SustainabilityCalculator
 
 NEXT_MONTH = date.today() + timedelta(days=30)
 
@@ -101,3 +101,28 @@ class NotificationTests(TestCase):
         self.assertContains(response, '<span class="badge">1</span>', html=True)
         self.client.post(reverse("notifications_read"))
         self.assertEqual(self.client.get(reverse("home")).context["unread_count"], 0)
+
+
+class ReportTests(TestCase):
+    def setUp(self):
+        self.w = build_sample_world()
+        self.req = complete_transfer(self.w, quantity=1)
+
+    def test_users_see_only_their_departments_requests(self):
+        self.assertEqual(list(RequestReportService.requests_for(self.w.physics_rep)), [self.req])
+        self.assertEqual(list(RequestReportService.requests_for(self.w.eng_coord)), [self.req])
+        self.assertEqual(list(RequestReportService.requests_for(self.w.fac_rep)), [])
+        self.assertEqual(list(RequestReportService.requests_for(self.w.admin)), [self.req])
+
+    def test_state_filter(self):
+        self.assertEqual(list(RequestReportService.requests_for(self.w.admin, state="Completed")), [self.req])
+        self.assertEqual(list(RequestReportService.requests_for(self.w.admin, state="Rejected")), [])
+
+    def test_csv_export(self):
+        self.client.force_login(self.w.admin)
+        response = self.client.get(reverse("report_table") + "?export=csv")
+        self.assertEqual(response["Content-Type"], "text/csv")
+        lines = response.content.decode().splitlines()
+        self.assertTrue(lines[0].startswith("Code,Submitted,Requesting department"))
+        self.assertIn(self.req.code, lines[1])
+        self.assertIn("Approved by admin", lines[1])
