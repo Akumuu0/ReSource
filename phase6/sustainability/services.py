@@ -8,11 +8,16 @@ import io
 from datetime import date
 from decimal import Decimal
 
+from django.db import transaction
 from django.db.models import Q, Sum
+from django.utils import timezone
 
+from accounts.common import BusinessRuleError
+from accounts.models import User
+from accounts.permissions import require_role
 from resource_requests.models import Approval, Request, Transfer
 
-from .models import CategoryValue
+from .models import AIReport, CategoryValue
 
 # What the dashboard shows for each measure: its formula and its source.
 MEASURES = [
@@ -177,3 +182,34 @@ class RequestReportService:
         for req in requests:
             writer.writerow(RequestReportService.as_row(req))
         return buffer.getvalue()
+
+
+class SummaryService:
+    """AI-5: the Administrator reviews the generated summary before anyone else sees it (H-10)."""
+
+    @staticmethod
+    @transaction.atomic
+    def publish(user, report, final_text):
+        require_role(user, User.ADMINISTRATOR)
+        if report.state != AIReport.DRAFT:
+            raise BusinessRuleError(f"This summary is already {report.state}.")
+        final_text = (final_text or "").strip()
+        if not final_text:
+            raise BusinessRuleError("The summary text cannot be empty.")
+        report.final_text = final_text
+        report.state = AIReport.PUBLISHED
+        report.published_by = user
+        report.published_at = timezone.now()
+        report.save()
+        edited = final_text != report.draft_text.strip()
+        report.ai_output.record_decision(user, "Published after edits" if edited else "Published unchanged")
+
+    @staticmethod
+    @transaction.atomic
+    def discard(user, report):
+        require_role(user, User.ADMINISTRATOR)
+        if report.state != AIReport.DRAFT:
+            raise BusinessRuleError(f"This summary is already {report.state}.")
+        report.state = AIReport.DISCARDED
+        report.save()
+        report.ai_output.record_decision(user, "Discarded")
