@@ -8,7 +8,7 @@
 </div>
 <p class="subtitle">
   {% for approval in approvals %}{% if approval.step == "Release" and approval.decision == "Approved" %}Released by {{ approval.decided_by.display_name }} ({{ approval.decided_by.department }}) · {{ approval.decided_at|date:"d/m/Y H:i" }} · {% endif %}{% endfor %}
-  {% if can_approve %}{% if involved %}<strong>you submitted or released this request, so you cannot approve it (FR-4.4)</strong>{% else %}you did not submit or release this request (FR-4.4){% endif %}{% else %}made {{ req.created_at|date:"d/m/Y H:i" }}{% endif %}
+  {% if can_approve %}{% if involved %}<strong>you submitted or released this request, so you cannot approve it</strong>{% else %}you did not submit or release this request{% endif %}{% else %}made {{ req.created_at|date:"d/m/Y H:i" }}{% endif %}
 </p>
 
 <ol class="steps">
@@ -24,7 +24,7 @@
       <tr><th>Requesting department</th><td>{{ req.department }} ({{ req.requester.display_name }}, {{ req.requester.get_role_display }})</td></tr>
       <tr><th>Asset</th><td>{% if req.asset %}<a href="{% url 'asset_detail' req.asset.pk %}">{{ req.asset.code }} · {{ req.asset.name }}</a>{% else %}<em>Open need, no asset chosen yet</em>{% endif %}</td></tr>
       {% if req.category %}<tr><th>Category</th><td>{{ req.category }}</td></tr>{% endif %}
-      <tr><th>Quantity</th><td>{{ req.quantity }}{% if req.asset and req.state in "Submitted Released" %} of {{ req.asset.available_quantity }} free (checked again on approval, FR-4.5){% endif %}</td></tr>
+      <tr><th>Quantity</th><td>{{ req.quantity }}{% if req.asset and req.state in "Submitted Released" %} of {{ req.asset.available_quantity }} free (checked again on approval){% endif %}</td></tr>
       {% if req.owner_department %}<tr><th>Owner and location</th><td>{{ req.owner_department }} · {{ req.owner_department.campus }}</td></tr>{% endif %}
       {% if req.asset %}<tr><th>Estimated value</th><td>AED {{ req.estimated_value|floatformat:"0g" }} ({{ req.quantity }} × AED {{ req.asset.estimated_value|floatformat:"-2g" }})</td></tr>{% endif %}
       <tr><th>Purpose</th><td>{{ req.purpose }}</td></tr>
@@ -60,7 +60,7 @@
         <input name="reason" placeholder="Reason for rejecting (required)" required>
         <button class="button danger">Reject</button>
       </form>
-      <p class="small muted">Approval reserves {{ req.quantity }} unit(s) in the same step (FR-3.8). Rejecting needs a reason.</p>
+      <p class="small muted">Approval reserves {{ req.quantity }} unit(s) in the same step. Rejecting needs a reason.</p>
     {% endif %}
 
     {% if can_hand_over %}
@@ -101,8 +101,7 @@
         <p>{{ recommendation.reason }}</p>
         {% if recommendation.rank > 1 %}<p class="small"><strong>Requester's reason:</strong> {{ recommendation.output.human_decision }}</p>{% endif %}
         <p class="small"><strong>Main limitation:</strong> {{ recommendation.limitation }}</p>
-        <p class="small-print">Shown for information only; the AI does not approve.
-          {% if recommendation.output.model_name %}Model: {{ recommendation.output.model_name }} · {% endif %}rank rules v3.</p>
+        <p class="small-print">Shown for information only; the AI does not approve.</p>
       {% elif req.asset %}
         <p>Requested directly from the asset list; no AI ranking was used.</p>
       {% else %}
@@ -117,11 +116,6 @@
       {% endfor %}
     </div>
 
-    <div class="ai-down">
-      <h3>When AI is unavailable</h3>
-      If the match details cannot be loaded, this panel says so and the decision uses the recorded facts on the left.
-      Release and approval never depend on AI.
-    </div>
   </div>
 </div>
 {% endblock %}
