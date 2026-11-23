@@ -14,7 +14,7 @@ from accounts.common import BusinessRuleError
 from accounts.models import User
 from accounts.permissions import role_required
 from ai.models import FACTOR_LABELS, AIOutput, Recommendation
-from ai.ranking import FORMULAS, RULES_VERSION, WEAK_SCORE, WEIGHTS, RankingModel
+from ai.ranking import FORMULAS, WEAK_SCORE, WEIGHTS, RankingModel
 from assets.models import Asset
 from assets.services import AssetService
 
@@ -221,7 +221,6 @@ def matches(request, pk):
         "others": recommendations[1:],
         "output": output,
         "score_rows": score_rows(),
-        "rules_version": RULES_VERSION,
         "weak": bool(recommendations) and recommendations[0].score < WEAK_SCORE,
     }
     return render(request, "resource_requests/matches.html", context)
