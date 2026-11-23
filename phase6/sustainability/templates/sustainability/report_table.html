@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Requests and transfers</h1>
+  <a class="button primary" href="?{{ csv_query }}{% if csv_query %}&amp;{% endif %}export=csv">Export CSV</a>
+</div>
+<p class="muted">{% if user.is_administrator %}All departments.{% else %}Requests made by or sent to {{ user.department }}.{% endif %}
+  The CSV export uses the same filters.</p>
+
+<form method="get" class="filters">
+  {{ form.state }} {{ form.department }}
+  {{ form.date_from.label_tag }} {{ form.date_from }}
+  {{ form.date_to.label_tag }} {{ form.date_to }}
+  <button class="button primary">Filter</button>
+  <a class="button" href="{% url 'report_table' %}">Clear</a>
+</form>
+
+<table class="table">
+  <thead><tr>{% for column in columns %}<th>{{ column }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>
+  {% empty %}
+    <tr><td colspan="{{ columns|length }}" class="muted">No requests match these filters.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
