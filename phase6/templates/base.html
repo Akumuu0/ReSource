@@ -42,6 +42,7 @@
     {% endif %}
     <a href="{% url 'dashboard' %}" class="{% if page == 'dashboard' %}active{% endif %}">Dashboard</a>
     <a href="{% url 'report_table' %}" class="{% if page == 'report_table' %}active{% endif %}">Reports</a>
+    <a href="{% url 'summary_list' %}" class="{% if page == 'summary_list' or page == 'summary_detail' %}active{% endif %}">AI summaries</a>
     <a href="{% url 'notifications' %}" class="{% if page == 'notifications' %}active{% endif %}">Notifications</a>
     {% if user.is_administrator %}<a href="{% url 'admin:index' %}">Admin site</a>{% endif %}
   </nav>
