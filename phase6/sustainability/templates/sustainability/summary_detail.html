@@ -7,7 +7,7 @@
   <span class="state big">{{ report.state }}</span>
 </div>
 <p class="subtitle">Requested by {{ report.created_by.display_name }} {{ report.created_at|date:"d/m/Y H:i" }} · whole campus ·
-  {% if report.state == "Draft" %}never shown to others before it is published (FR-12.9){% else %}{{ report.state|lower }}{% endif %}</p>
+  {% if report.state == "Draft" %}never shown to others before it is published{% else %}{{ report.state|lower }}{% endif %}</p>
 
 <div class="two-col">
   <div>
@@ -16,15 +16,15 @@
       {% if not output.used_ai %}<p class="fallback">{{ output.source }} ({{ output.note }})</p>{% endif %}
       <p class="summary-text">{% for piece in pieces %}{% if piece.number %}<strong>{{ piece.text }}</strong><span class="check {% if piece.checked %}ok{% else %}bad{% endif %}" title="{% if piece.checked %}Matches a calculated figure{% else %}Not a calculated figure{% endif %}">{% if piece.checked %}✔{% else %}✘{% endif %}</span>{% else %}{{ piece.text }}{% endif %}{% endfor %}</p>
       <p class="note">Assumptions: weights and values are the ones recorded on each asset; carbon uses the EPA WARM v16 factor
-        of 22.92 kg CO2e per kg (U.S. data) for electronic categories only, and categories without a factor are left out
-        (FR-13.8); only transfers with confirmed receipt count.</p>
-      <p class="small-print">{% if output.used_ai %}AI-generated · {{ output.model_name }}{% else %}Template text{% endif %} ·
-        data: calculated figures for {{ report.period_start|date:"d/m/Y" }} to {{ report.period_end|date:"d/m/Y" }} (FR-12.6)</p>
+        of 22.92 kg CO2e per kg (U.S. data) for electronic categories only, and categories without a factor are left out;
+        only transfers with confirmed receipt count.</p>
+      <p class="small-print">{% if output.used_ai %}AI-generated{% else %}Template text{% endif %} ·
+        data: calculated figures for {{ report.period_start|date:"d/m/Y" }} to {{ report.period_end|date:"d/m/Y" }}</p>
     </div>
 
     <div class="card">
       <h2>Calculated figures</h2>
-      <p class="small muted">Frozen when the draft was generated (SustainabilityImpact records).</p>
+      <p class="small muted">Saved figures, frozen when the draft was generated.</p>
       <table class="table">
         <tbody>
         {% for figure in figures %}
@@ -50,21 +50,16 @@
             <button class="button danger" name="action" value="discard">Discard</button>
           </div>
         </form>
-        <p class="small-print">The original draft and your published version are both kept (FR-12.10).</p>
+        <p class="small-print">The original draft and your published version are both kept.</p>
       {% else %}
         <p>{{ report.final_text|linebreaksbr }}</p>
         {% if report.published_at %}<p class="small-print">Published {{ report.published_at|date:"d/m/Y H:i" }} by {{ report.published_by.display_name }}.</p>{% endif %}
       {% endif %}
       {% if user.is_administrator %}
-        <p class="small-print">AI output #{{ output.pk }} · {{ output.source }} · decision: {{ output.human_decision|default:"not decided yet" }}</p>
+        <p class="small-print">Decision: {{ output.human_decision|default:"not decided yet" }}</p>
       {% endif %}
     </div>
 
-    <div class="ai-down{% if not output.used_ai %} active{% endif %}">
-      <h3>When AI is unavailable</h3>
-      If the AI cannot answer, or any number in its text is not a calculated figure, the draft is written from a
-      template with the same figures instead.
-    </div>
   </div>
 </div>
 {% endblock %}
