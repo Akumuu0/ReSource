@@ -42,3 +42,27 @@ class ConfidenceLevelBoundaryTests(SimpleTestCase):
         for confidence, level in cases:
             with self.subTest(confidence=confidence):
                 self.assertEqual(confidence_level(confidence), level)
+
+
+class RankingFactorBlackBoxTests(TestCase):
+    def setUp(self):
+        self.w = build_sample_world()
+        self.need = RequestService.submit_need(self.w.physics_rep, self.w.lab, 2, "Two oscilloscopes for a teaching lab",
+                                               TODAY + timedelta(days=30))
+
+    def test_bb_h2_ready_factor_by_days_late(self):
+        # Every candidate is free now, so "days late" is today minus the needed-by date.
+        cases = [(-1, 1.0), (0, 1.0), (1, 0.5), (2, 0.5), (3, 0.0)]
+        for days_late, expected in cases:
+            self.need.needed_by = TODAY - timedelta(days=days_late)
+            carbon = RankingModel.carbon(self.need, self.w.scope)
+            with self.subTest(days_late=days_late):
+                self.assertEqual(RankingModel.factors(self.need, self.w.scope, carbon)["ready"], expected)
+
+    def test_bb_h3_urgency_low_medium_high(self):
+        cases = [(Request.LOW, 0.05 / 0.95), (Request.MEDIUM, 0.10), (Request.HIGH, 0.20 / 1.10)]
+        for urgency, ready_weight in cases:
+            weights = RankingModel.weights_for(SimpleNamespace(urgency=urgency))
+            with self.subTest(urgency=urgency):
+                self.assertAlmostEqual(weights["ready"], ready_weight, places=3)
+                self.assertAlmostEqual(sum(weights.values()), 1.0)
