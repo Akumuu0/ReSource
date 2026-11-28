@@ -79,3 +79,12 @@ class NumberCheckBlackBoxTests(SimpleTestCase):
         for text, accepted in cases:
             with self.subTest(text=text):
                 self.assertEqual(ReportGenerator.check_numbers(text, allowed) == "", accepted)
+
+
+class CostFactorWhiteBoxTests(SimpleTestCase):
+    def test_wb_h1_every_branch(self):
+        self.assertEqual(cost_factor(0, 100), 1.0)  # B1: no cost
+        self.assertEqual(cost_factor(50, 0), 0.0)  # B2: limit 0
+        self.assertEqual(cost_factor(50, -10), 0.0)  # B2: limit below 0
+        self.assertEqual(cost_factor(200, 100), 0.0)  # B3: cut at 0
+        self.assertEqual(cost_factor(25, 100), 0.75)  # B3: 1 - 25 / 100
