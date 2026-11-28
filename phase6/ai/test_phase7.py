@@ -161,3 +161,29 @@ class HiddenInstructionBlackBoxTests(TestCase):
         self.assertEqual(self.req.state, Request.SUBMITTED)  # no request was approved
         self.assertEqual(Approval.objects.count(), 0)
         self.assertEqual(Asset.objects.count(), assets_before)  # and nothing was saved
+
+
+@override_settings(GEMINI_API_KEY="")
+class SummaryPageWhiteBoxTests(TestCase):
+    """The POST of the summary page: action publish | any other action discards | a refused action."""
+
+    def setUp(self):
+        self.w = build_sample_world()
+        self.report = ReportGenerator().generate(self.w.admin, TODAY - timedelta(days=30), TODAY)
+        self.url = reverse("summary_detail", args=[self.report.pk])
+        self.client.force_login(self.w.admin)
+
+    def test_wb_h7_publish_discard_and_refused_branches(self):
+        second = ReportGenerator().generate(self.w.admin, TODAY - timedelta(days=7), TODAY)
+        response = self.client.post(self.url, {"action": "publish", "final_text": "Checked by the Administrator."},
+                                    follow=True)
+        self.assertContains(response, "Summary published.")  # B1: action publish
+        self.report.refresh_from_db()
+        self.assertEqual((self.report.state, self.report.final_text), (AIReport.PUBLISHED, "Checked by the Administrator."))
+        url = reverse("summary_detail", args=[second.pk])
+        response = self.client.post(url, {"action": "discard"}, follow=True)
+        self.assertContains(response, "Summary discarded.")  # B2: any other action discards
+        second.refresh_from_db()
+        self.assertEqual(second.state, AIReport.DISCARDED)
+        response = self.client.post(url, {"action": "publish", "final_text": "Too late."}, follow=True)
+        self.assertContains(response, "This summary is already Discarded.")  # B3: BusinessRuleError
