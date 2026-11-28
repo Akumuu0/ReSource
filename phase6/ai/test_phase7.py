@@ -66,3 +66,16 @@ class RankingFactorBlackBoxTests(TestCase):
             with self.subTest(urgency=urgency):
                 self.assertAlmostEqual(weights["ready"], ready_weight, places=3)
                 self.assertAlmostEqual(sum(weights.values()), 1.0)
+
+
+class NumberCheckBlackBoxTests(SimpleTestCase):
+    """A number in the summary is accepted only within 0.001 of a calculated figure."""
+
+    def test_bb_h4_numbers_at_the_tolerance(self):
+        allowed = {38.0, 41200.0}
+        cases = [("No numbers at all.", True), ("38 items.", True), ("38.0 items.", True),
+                 ("AED 41,200 saved.", True), ("38.0005 items.", True), ("38.002 items.", False),
+                 ("39 items.", False)]
+        for text, accepted in cases:
+            with self.subTest(text=text):
+                self.assertEqual(ReportGenerator.check_numbers(text, allowed) == "", accepted)
