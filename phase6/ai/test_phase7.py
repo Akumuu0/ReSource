@@ -88,3 +88,33 @@ class CostFactorWhiteBoxTests(SimpleTestCase):
         self.assertEqual(cost_factor(50, -10), 0.0)  # B2: limit below 0
         self.assertEqual(cost_factor(200, 100), 0.0)  # B3: cut at 0
         self.assertEqual(cost_factor(25, 100), 0.75)  # B3: 1 - 25 / 100
+
+
+class GatewayWhiteBoxTests(TestCase):
+    """The paths of AIGateway.run (D1 to D5 in Section 7.5 of the test document)."""
+
+    def setUp(self):
+        self.w = build_sample_world()
+
+    def run_gateway(self, **kwargs):
+        return AIGateway().run(AIOutput.CLASSIFICATION, "system", "prompt", {}, fallback=lambda: {"x": 1},
+                               user=self.w.eng_coord, **kwargs)
+
+    def test_wb_h2_answer_passes_validation(self):
+        with fake_ai({"x": 2, "confidence": 0.9}):
+            result = self.run_gateway(validate=lambda data: "")  # D1 true, D2 false
+        self.assertTrue(result.used_ai)
+        self.assertEqual(result.data, {"x": 2, "confidence": 0.9})  # the whole AI answer is kept (D-1)
+        self.assertEqual(result.output.note, "OK")
+        self.assertEqual(result.output.model_name, settings.AI_MODEL)  # D5: source is the AI
+
+    def test_wb_h3_given_confidence_replaces_the_answers(self):
+        with fake_ai({"x": 2, "confidence": 0.9}):
+            result = self.run_gateway(confidence=0.42)  # D4: confidence given
+        self.assertEqual(result.output.confidence, 0.42)
+
+    @override_settings(GEMINI_API_KEY="")
+    def test_wb_h4_fallback_stores_no_model_name(self):
+        result = self.run_gateway()  # no key: D1 false, D3 true
+        self.assertFalse(result.used_ai)
+        self.assertEqual(result.output.model_name, "")  # D5: source is the fallback
