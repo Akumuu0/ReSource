@@ -118,3 +118,18 @@ class GatewayWhiteBoxTests(TestCase):
         result = self.run_gateway()  # no key: D1 false, D3 true
         self.assertFalse(result.used_ai)
         self.assertEqual(result.output.model_name, "")  # D5: source is the fallback
+
+
+class PrivacyFilterWhiteBoxTests(TestCase):
+    """The name loop of strip_personal_data: names under 3 letters are kept; full names go first."""
+
+    def setUp(self):
+        self.w = build_sample_world()
+        User.objects.create(username="ali.al", first_name="Ali", last_name="Al", role=User.REPRESENTATIVE,
+                            department=self.w.physics)
+
+    def test_wb_h5_names_of_three_letters_or_more_are_removed(self):
+        self.assertEqual(AIGateway.strip_personal_data("Al met Ali at lunch"), "Al met [name] at lunch")
+
+    def test_wb_h6_full_name_is_removed_before_its_parts(self):
+        self.assertEqual(AIGateway.strip_personal_data("Ask Ali Al today"), "Ask [name] today")
